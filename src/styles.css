@@ -153,10 +153,12 @@ th{color:var(--muted); font-weight:600; text-align:left}
 .loginTitle{
   margin:0 0 28px;
   font-size:40px;
-  line-height:1.2;
+  line-height:1.25;
   font-weight:800;
-  letter-spacing:-0.03em;
+  letter-spacing:-0.02em;
   color:#0f172a;
+
+  word-break:keep-all; 
 }
 
 .googleBtn{
