@@ -459,14 +459,11 @@ if (appLoading) {
   return (
     <div className="page">
       <div className="container">
-        <div className="topbar">
-          <div>
-            <h1>나만의 주식 관리 프로그램</h1>
-            <p>포트폴리오와 수익 현황을 한눈에!</p>
-          </div>
+       <div className="topbar">
+  <div></div>
 
-          {session && (
-            <div className="row gap8">
+  {session && (
+    <div className="row gap8">
               <button
                 className="btn secondary"
                 onClick={async () => {
