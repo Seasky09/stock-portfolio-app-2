@@ -581,4 +581,3 @@ function Metric({ title, value, cls = "" }) {
     </div>
   );
 }
-
