@@ -443,8 +443,15 @@ async function signOut() {
 if (appLoading) {
   return (
     <div className="splash">
-      <img src="/icon.png" className="splashIcon" />
-      <div className="splashText">Loading...</div>
+      <div className="splashCard">
+        <img src="/icon.png" className="splashIcon" />
+        <div className="splashBrand">Portfolio</div>
+        <div className="splashDots">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
     </div>
   );
 }
