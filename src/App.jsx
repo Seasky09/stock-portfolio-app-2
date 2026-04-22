@@ -459,21 +459,18 @@ async function signOut() {
         {error && <div className="alert error">{error}</div>}
         {info && <div className="alert info">{info}</div>}
 
-        {!session ? (
-          <div className="card narrow loginCard">
-  <div className="loginBadge">📈 Portfolio</div>
-  <h2>나만의 주식 관리 프로그램</h2>
-  <p className="loginSubText">구글 계정으로 간편하게 로그인할 수 있습니다.</p>
+{!session ? (
+  <div className="loginShell">
+    <div className="card narrow loginCard">
+      <div className="loginBadge">Portfolio</div>
+      <h1 className="loginTitle">나만의 주식 관리 프로그램</h1>
 
-  <button className="btn primary full googleBtn" onClick={signInWithGoogle}>
-    구글로 로그인
-  </button>
-
-  <div className="note">
-    보유 종목과 실현손익 그리고 현재 시세를 한곳에서 확인할 수 있습니다.
+      <button className="btn primary full googleBtn" onClick={signInWithGoogle}>
+        Google로 시작하기
+      </button>
+    </div>
   </div>
-</div>
-        ) : (
+) : (
           <>
             <div className="metrics">
               <Metric title="총 투자원금" value={won(summary.totalCost)} />
