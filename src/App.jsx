@@ -468,15 +468,12 @@ async function signOut() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
             />
-            <button className="btn primary full" onClick={signIn}>
-              로그인 링크 보내기
-            </button>
 
             <button className="btn primary full" onClick={signInWithGoogle}>
   구글로 로그인
 </button>
             <div className="note">
-              수파베이스에서 Email 로그인을 켜고, Vercel 환경변수에 두 값을 넣으면 바로 사용 가능합니다.
+              구글 계정으로 바로 로그인할 수 있습니다.
             </div>
           </div>
         ) : (
