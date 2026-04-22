@@ -196,6 +196,15 @@ export default function App() {
   }, [session]);
 
   useEffect(() => {
+  const timer = setTimeout(() => {
+    setAppLoading(false);
+  }, 300);
+
+  return () => clearTimeout(timer);
+}, []);
+
+
+  useEffect(() => {
     if (session && trades.length > 0) {
       fetchLivePrices();
     }
@@ -809,10 +818,3 @@ function Metric({ title, value, cls = "" }) {
     </div>
   );
 }
-useEffect(() => {
-  const timer = setTimeout(() => {
-    setAppLoading(false);
-  }, 300);
-
-  return () => clearTimeout(timer);
-}, []);
