@@ -463,7 +463,7 @@ async function signOut() {
   <div className="loginShell">
     <div className="card narrow loginCard">
       <div className="loginBadge">Portfolio</div>
-      <h1 className="loginTitle">나만의 주식 관리 프로그램</h1>
+      <h1 className="loginTitle">📊 나만의 주식 관리 프로그램</h1>
 
       <button className="btn primary full googleBtn" onClick={signInWithGoogle}>
         Google로 시작하기
