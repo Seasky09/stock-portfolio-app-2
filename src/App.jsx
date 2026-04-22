@@ -512,13 +512,7 @@ if (appLoading) {
                   className={`tab ${activeTab === tab ? "active" : ""}`}
                   onClick={() => setActiveTab(tab)}
                 >
-                  {tab === "dashboard"
-                    ? "대시보드"
-                    : tab === "holdings"
-                    ? "보유 종목"
-                    : tab === "trades"
-                    ? "거래 내역"
-                    : "실현손익"}
+                  
                 </button>
               ))}
             </div>
