@@ -503,18 +503,20 @@ if (appLoading) {
             </div>
 
             <div className="tabs">
-{["holdings", "trades", "realized"].map((tab) => (                <button
+              {["holdings", "trades", "realized"].map((tab) => (
+                <button
                   key={tab}
                   className={`tab ${activeTab === tab ? "active" : ""}`}
                   onClick={() => setActiveTab(tab)}
                 >
-                  
+                  {tab === "holdings"
+                    ? "보유 종목"
+                    : tab === "trades"
+                    ? "거래 내역"
+                    : "실현손익"}
                 </button>
               ))}
             </div>
-
-            </div>
-
 
             {activeTab === "holdings" && (
               <div className="card">
