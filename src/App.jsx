@@ -1,3 +1,4 @@
+// redeploy test 1
 import React, { useEffect, useMemo, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 
@@ -419,34 +420,12 @@ async function signInWithGoogle() {
     provider: "google",
   });
 }
-    if (!supabase) return;
-    setError("");
-    setInfo("");
 
-    if (!email.trim()) {
-      setError("이메일을 입력해 주세요.");
-      return;
-    }
-
-    const { error: signInError } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: window.location.origin,
-      },
-    });
-
-    if (signInError) {
-      setError(`로그인 오류: ${signInError.message}`);
-    } else {
-      setInfo("이메일로 로그인 링크를 보냈습니다.");
-    }
-  }
-
-  async function signOut() {
-    if (!supabase) return;
-    await supabase.auth.signOut();
-    setInfo("로그아웃되었습니다.");
-  }
+async function signOut() {
+  if (!supabase) return;
+  await supabase.auth.signOut();
+  setInfo("로그아웃되었습니다.");
+}
 
   if (loading) {
     return <div className="page"><div className="card">불러오는 중입니다...</div></div>;
