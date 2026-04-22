@@ -517,11 +517,15 @@ export default function App() {
                             <td className="right">{won(Math.round(row.avgPrice))}</td>
                             <td className="right">
                               <input
-                                className="priceInput"
-                                type="number"
-                                value={manualPrices[row.ticker] ?? livePrices[row.ticker] ?? 0}
-                                onChange={(e) => saveManualPrice(row.ticker, e.target.value)}
-                              />
+  className="priceInput"
+  type="text"
+  inputMode="numeric"
+  value={Number(manualPrices[row.ticker] ?? livePrices[row.ticker] ?? 0).toLocaleString("ko-KR")}
+  onChange={(e) => {
+    const raw = e.target.value.replaceAll(",", "").replace(/[^\d]/g, "");
+    saveManualPrice(row.ticker, raw);
+  }}
+/>
                             </td>
                             <td className="right">{won(Math.round(row.valuation))}</td>
                             <td className={`right bold ${gainClass(row.gain)}`}>{signedWon(Math.round(row.gain))}</td>
