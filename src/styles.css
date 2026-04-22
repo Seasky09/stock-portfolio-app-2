@@ -21,10 +21,26 @@ body{background:var(--bg); color:var(--text)}
 .metrics{display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:20px}
 .metric{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px}
 .metricTitle{font-size:13px; color:var(--muted); margin-bottom:8px}
-.metricValue{font-size:28px; font-weight:700}
+.metricValue{
+  font-size:clamp(18px,2.2vw,28px);
+  font-weight:700;
+  line-height:1.2;
+  white-space:nowrap;
+}
 .tabs{display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap}
-.tab{border:1px solid var(--line); background:white; padding:10px 16px; border-radius:10px; cursor:pointer}
-.tab.active{background:var(--primary); color:white; border-color:var(--primary)}
+.tab{
+  border:1px solid var(--line);
+  background:white;
+  padding:10px 16px;
+  border-radius:10px;
+  cursor:pointer;
+  color:var(--text);
+}
+.tab.active{
+  background:var(--primary);
+  color:white;
+  border-color:var(--primary);
+}
 .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px}
 .tradeBox{display:flex; justify-content:space-between; gap:12px; border:1px solid var(--line); border-radius:12px; padding:12px; margin-top:10px}
 .bold{font-weight:700}
@@ -36,10 +52,20 @@ body{background:var(--bg); color:var(--text)}
 .end{justify-content:flex-end}
 .right{text-align:right}
 .gap8{gap:8px}
-.btn{border:none; border-radius:10px; padding:10px 14px; cursor:pointer; font-weight:600}
+.btn{
+  border:none;
+  border-radius:10px;
+  padding:10px 14px;
+  cursor:pointer;
+  font-weight:600;
+  color:var(--text);
+}
 .btn.primary{background:var(--primary); color:white}
-.btn.secondary{background:white; color:var(--text); border:1px solid var(--line)}
-.btn.full{width:100%}
+.btn.secondary{
+  background:white;
+  color:var(--text);
+  border:1px solid var(--line);
+}
 .alert{padding:12px 14px; border-radius:12px; margin-bottom:16px}
 .alert.error{background:#fef2f2; color:#b91c1c; border:1px solid #fecaca}
 .alert.info{background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe}
@@ -72,11 +98,10 @@ th{color:var(--muted); font-weight:600; text-align:left}
   padding:32px 16px 24px;
   background:#f8fafc;
 }
-  .topbar{flex-direction:column}
+
   .metrics{grid-template-columns:1fr}
   .formGrid{grid-template-columns:1fr}
-  .topbar h1{font-size:22px}
-}
+
 .loginCard{
   text-align:center;
   padding:32px 24px;
@@ -106,18 +131,6 @@ th{color:var(--muted); font-weight:600; text-align:left}
   background:linear-gradient(135deg,#3b82f6,#2563eb);
 }
 
-.topbar h1{
-  margin:0;
-  font-size:32px;
-  font-weight:800;
-  letter-spacing:-0.02em;
-}
-
-.topbar p{
-  margin:10px 0 0;
-  color:var(--muted);
-  font-size:15px;
-}
 .loginShell{
   min-height:calc(100vh - 120px);
   display:flex;
