@@ -164,6 +164,7 @@ export default function App() {
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [email, setEmail] = useState("");
+  const [appLoading, setAppLoading] = useState(true);
 
   useEffect(() => {
     if (!supabase) {
@@ -430,6 +431,14 @@ async function signOut() {
   if (loading) {
     return <div className="page"><div className="card">불러오는 중입니다...</div></div>;
   }
+if (appLoading) {
+  return (
+    <div className="splash">
+      <img src="/icon.png" className="splashIcon" />
+      <div className="splashText">Loading...</div>
+    </div>
+  );
+}
 
   return (
     <div className="page">
@@ -800,3 +809,10 @@ function Metric({ title, value, cls = "" }) {
     </div>
   );
 }
+useEffect(() => {
+  const timer = setTimeout(() => {
+    setAppLoading(false);
+  }, 1200);
+
+  return () => clearTimeout(timer);
+}, []);
