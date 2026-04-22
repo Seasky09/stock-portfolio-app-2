@@ -158,7 +158,7 @@ export default function App() {
   const [manualPrices, setManualPrices] = useState({});
   const [livePrices, setLivePrices] = useState({});
   const [priceLoading, setPriceLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState("holdings");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState("");
