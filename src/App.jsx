@@ -390,11 +390,35 @@ export default function App() {
     }
   }
 
-  async function signIn() {
-  async function signInWithGoogle() {
+async function signIn() {
+  if (!supabase) return;
+  setError("");
+  setInfo("");
+
+  if (!email.trim()) {
+    setError("이메일을 입력해 주세요.");
+    return;
+  }
+
+  const { error: signInError } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: window.location.origin,
+    },
+  });
+
+  if (signInError) {
+    setError(`로그인 오류: ${signInError.message}`);
+  } else {
+    setInfo("이메일로 로그인 링크를 보냈습니다.");
+  }
+}
+
+async function signInWithGoogle() {
   await supabase.auth.signInWithOAuth({
     provider: "google",
   });
+}
 }
     if (!supabase) return;
     setError("");
