@@ -812,7 +812,7 @@ function Metric({ title, value, cls = "" }) {
 useEffect(() => {
   const timer = setTimeout(() => {
     setAppLoading(false);
-  }, 1200);
+  }, 300);
 
   return () => clearTimeout(timer);
 }, []);
