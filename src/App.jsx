@@ -391,6 +391,11 @@ export default function App() {
   }
 
   async function signIn() {
+  async function signInWithGoogle() {
+  await supabase.auth.signInWithOAuth({
+    provider: "google",
+  });
+}
     if (!supabase) return;
     setError("");
     setInfo("");
@@ -464,6 +469,10 @@ export default function App() {
             <button className="btn primary full" onClick={signIn}>
               로그인 링크 보내기
             </button>
+
+            <button className="btn primary full" onClick={signInWithGoogle}>
+  구글로 로그인
+</button>
             <div className="note">
               수파베이스에서 Email 로그인을 켜고, Vercel 환경변수에 두 값을 넣으면 바로 사용 가능합니다.
             </div>
