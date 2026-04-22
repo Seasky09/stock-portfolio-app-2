@@ -442,7 +442,7 @@ export default function App() {
                   await fetchLivePrices();
                 }}
               >
-                {priceLoading ? "현재가 조회중..." : "새로고침"}
+                {priceLoading ? "갱신 중..." : "현재가 갱신"}
               </button>
               <button className="btn secondary" onClick={signOut}>로그아웃</button>
             </div>
