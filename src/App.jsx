@@ -436,8 +436,8 @@ async function signOut() {
       <div className="container">
         <div className="topbar">
           <div>
-            <h1>주식관리 웹앱 최소형</h1>
-            <p>꼭 필요한 기능만 넣었습니다. 로그인 · 거래기록 · 보유종목 · 실현손익 · 현재가 자동조회</p>
+            <h1>나만의 주식 관리 프로그램</h1>
+            <p>포트폴리오와 수익 현황을 한눈에!</p>
           </div>
 
           {session && (
@@ -460,22 +460,19 @@ async function signOut() {
         {info && <div className="alert info">{info}</div>}
 
         {!session ? (
-          <div className="card narrow">
-            <h2>로그인</h2>
-            <label>이메일</label>
-            <input
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-            />
+          <div className="card narrow loginCard">
+  <div className="loginBadge">📈 Portfolio</div>
+  <h2>나만의 주식 관리 프로그램</h2>
+  <p className="loginSubText">구글 계정으로 간편하게 로그인할 수 있습니다.</p>
 
-            <button className="btn primary full" onClick={signInWithGoogle}>
-  구글로 로그인
-</button>
-            <div className="note">
-              구글 계정으로 바로 로그인할 수 있습니다.
-            </div>
-          </div>
+  <button className="btn primary full googleBtn" onClick={signInWithGoogle}>
+    구글로 로그인
+  </button>
+
+  <div className="note">
+    보유 종목과 실현손익 그리고 현재 시세를 한곳에서 확인할 수 있습니다.
+  </div>
+</div>
         ) : (
           <>
             <div className="metrics">
