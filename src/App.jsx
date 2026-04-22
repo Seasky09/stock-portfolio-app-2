@@ -419,7 +419,6 @@ async function signInWithGoogle() {
     provider: "google",
   });
 }
-}
     if (!supabase) return;
     setError("");
     setInfo("");
