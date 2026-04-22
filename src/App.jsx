@@ -1,4 +1,3 @@
-// redeploy test 1
 import React, { useEffect, useMemo, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 
@@ -163,7 +162,6 @@ export default function App() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
-  const [email, setEmail] = useState("");
   const [appLoading, setAppLoading] = useState(true);
 
   useEffect(() => {
@@ -196,13 +194,12 @@ export default function App() {
   }, [session]);
 
   useEffect(() => {
-  const timer = setTimeout(() => {
-    setAppLoading(false);
-  }, 1000);
+    const timer = setTimeout(() => {
+      setAppLoading(false);
+    }, 1000);
 
-  return () => clearTimeout(timer);
-}, []);
-
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (session && trades.length > 0) {
@@ -271,8 +268,6 @@ export default function App() {
     () => computePortfolio(trades, mergedPrices),
     [trades, mergedPrices]
   );
-
-  const recentTrades = useMemo(() => [...trades].slice(0, 5), [trades]);
 
   function openCreateDialog() {
     setForm({ ...EMPTY_FORM, date: new Date().toISOString().slice(0, 10) });
@@ -401,69 +396,45 @@ export default function App() {
     }
   }
 
-async function signIn() {
-  if (!supabase) return;
-  setError("");
-  setInfo("");
-
-  if (!email.trim()) {
-    setError("이메일을 입력해 주세요.");
-    return;
+  async function signInWithGoogle() {
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+    });
   }
 
-  const { error: signInError } = await supabase.auth.signInWithOtp({
-    email,
-    options: {
-      emailRedirectTo: window.location.origin,
-    },
-  });
-
-  if (signInError) {
-    setError(`로그인 오류: ${signInError.message}`);
-  } else {
-    setInfo("이메일로 로그인 링크를 보냈습니다.");
+  async function signOut() {
+    if (!supabase) return;
+    await supabase.auth.signOut();
+    setInfo("로그아웃되었습니다.");
   }
-}
-
-async function signInWithGoogle() {
-  await supabase.auth.signInWithOAuth({
-    provider: "google",
-  });
-}
-
-async function signOut() {
-  if (!supabase) return;
-  await supabase.auth.signOut();
-  setInfo("로그아웃되었습니다.");
-}
 
   if (loading) {
     return <div className="page"><div className="card">불러오는 중입니다...</div></div>;
   }
-if (appLoading) {
-  return (
-    <div className="splash">
-      <div className="splashCard">
-        <img src="/icon.png" className="splashIcon" />
-        <div className="splashBrand">Portfolio</div>
-        <div className="splashDots">
-          <span></span>
-          <span></span>
-          <span></span>
+
+  if (appLoading) {
+    return (
+      <div className="splash">
+        <div className="splashCard">
+          <img src="/icon.png" className="splashIcon" />
+          <div className="splashBrand">Portfolio</div>
+          <div className="splashDots">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
         </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
   return (
     <div className="page">
       <div className="container">
-       <div className="topbar">
-  <div></div>
-
-  {session && (
-    <div className="row gap8">
+        <div className="topbar">
+          <div></div>
+          {session && (
+            <div className="row gap8">
               <button
                 className="btn secondary"
                 onClick={async () => {
@@ -481,18 +452,17 @@ if (appLoading) {
         {error && <div className="alert error">{error}</div>}
         {info && <div className="alert info">{info}</div>}
 
-{!session ? (
-  <div className="loginShell">
-    <div className="card narrow loginCard">
-      <div className="loginBadge">Portfolio</div>
-      <h1 className="loginTitle">📊 나만의 주식 관리 프로그램</h1>
-
-      <button className="btn primary full googleBtn" onClick={signInWithGoogle}>
-        Google로 시작하기
-      </button>
-    </div>
-  </div>
-) : (
+        {!session ? (
+          <div className="loginShell">
+            <div className="card narrow loginCard">
+              <div className="loginBadge">Portfolio</div>
+              <h1 className="loginTitle">📊 나만의 주식 관리 프로그램</h1>
+              <button className="btn primary full googleBtn" onClick={signInWithGoogle}>
+                Google로 시작하기
+              </button>
+            </div>
+          </div>
+        ) : (
           <>
             <div className="metrics">
               <Metric title="총 투자원금" value={won(summary.totalCost)} />
