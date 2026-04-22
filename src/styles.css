@@ -5,11 +5,14 @@
 }
 *{box-sizing:border-box}
 body{background:var(--bg); color:var(--text)}
-.page{min-height:100%; padding:24px}
-.container{max-width:1200px; margin:0 auto}
-.topbar{display:flex; justify-content:space-between; gap:12px; align-items:flex-start; margin-bottom:20px}
-.topbar h1{margin:0; font-size:28px}
-.topbar p{margin:8px 0 0; color:var(--muted)}
+.container{
+  width:100%;
+  max-width:1200px;
+  margin:0 auto;
+}
+.topbar{
+  display:none;
+}
 .card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(0,0,0,.04)}
 .card.narrow{max-width:520px; margin:0 auto}
 .metrics{display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:20px}
@@ -61,7 +64,17 @@ th{color:var(--muted); font-weight:600; text-align:left}
   .grid2{grid-template-columns:1fr}
 }
 @media (max-width: 640px){
-  .page{padding:12px}
+  .page{
+  min-height:100vh;
+  padding:24px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:
+    radial-gradient(circle at top left, rgba(59,130,246,0.08), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(37,99,235,0.06), transparent 30%),
+    #f8fafc;
+}
   .topbar{flex-direction:column}
   .metrics{grid-template-columns:1fr}
   .formGrid{grid-template-columns:1fr}
@@ -105,4 +118,73 @@ th{color:var(--muted); font-weight:600; text-align:left}
   margin:10px 0 0;
   color:var(--muted);
   font-size:15px;
+}
+.loginShell{
+  min-height:calc(100vh - 48px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.loginCard{
+  width:100%;
+  max-width:560px;
+  text-align:center;
+  padding:56px 44px;
+  border:1px solid #e2e8f0;
+  border-radius:24px;
+  background:rgba(255,255,255,0.92);
+  box-shadow:0 20px 60px rgba(15,23,42,0.08);
+  backdrop-filter:blur(10px);
+}
+
+.loginBadge{
+  display:inline-block;
+  margin-bottom:20px;
+  padding:8px 14px;
+  border-radius:999px;
+  background:#eff6ff;
+  color:#1d4ed8;
+  font-size:13px;
+  font-weight:700;
+  letter-spacing:0.02em;
+}
+
+.loginTitle{
+  margin:0 0 28px;
+  font-size:40px;
+  line-height:1.2;
+  font-weight:800;
+  letter-spacing:-0.03em;
+  color:#0f172a;
+}
+
+.googleBtn{
+  font-size:17px;
+  padding:16px 18px;
+  border-radius:14px;
+  background:#2563eb;
+  transition:transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.googleBtn:hover{
+  transform:translateY(-1px);
+  box-shadow:0 12px 24px rgba(37,99,235,0.22);
+  background:#1d4ed8;
+}
+
+@media (max-width: 640px){
+  .loginCard{
+    padding:40px 24px;
+    border-radius:20px;
+  }
+
+  .loginTitle{
+    font-size:30px;
+  }
+
+  .googleBtn{
+    font-size:16px;
+    padding:14px 16px;
+  }
 }
