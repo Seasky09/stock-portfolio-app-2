@@ -6,9 +6,8 @@
 *{box-sizing:border-box}
 body{background:var(--bg); color:var(--text)}
 .container{
-  width:100%;
-  max-width:1200px;
-  margin:0 auto;
+  max-width: 960px;
+  margin: 0 auto;
 }
 .topbar{
   display:none;
@@ -65,8 +64,9 @@ th{color:var(--muted); font-weight:600; text-align:left}
 }
 @media (max-width: 640px){
   .page{
-  min-height:100vh;
-  padding:24px;
+  min-height: 100vh;
+  padding: 32px 16px 24px;
+  box-sizing: border-box;
   display:flex;
   align-items:center;
   justify-content:center;
