@@ -503,8 +503,7 @@ if (appLoading) {
             </div>
 
             <div className="tabs">
-              {["dashboard", "holdings", "trades", "realized"].map((tab) => (
-                <button
+{["holdings", "trades", "realized"].map((tab) => (                <button
                   key={tab}
                   className={`tab ${activeTab === tab ? "active" : ""}`}
                   onClick={() => setActiveTab(tab)}
@@ -514,39 +513,8 @@ if (appLoading) {
               ))}
             </div>
 
-            {activeTab === "dashboard" && (
-              <div className="grid2">
-                <div className="card">
-                  <h2>최근 거래</h2>
-                  {recentTrades.length === 0 ? (
-                    <div className="muted">아직 거래가 없습니다.</div>
-                  ) : (
-                    recentTrades.map((row) => (
-                      <div key={row.id} className="tradeBox">
-                        <div>
-                          <div className="bold">{row.stock_name}</div>
-                          <div className="small">{row.date} · {row.ticker}</div>
-                        </div>
-                        <div className="right">
-                          <span className={`pill ${row.type}`}>{row.type === "buy" ? "매수" : "매도"}</span>
-                          <div className="small" style={{ marginTop: 8 }}>
-                            {Number(row.qty).toLocaleString("ko-KR")}주 · {won(row.price)}
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
+            </div>
 
-                <div className="card">
-                  <h2>안내</h2>
-                  <div className="line">① 이 버전은 꼭 필요한 기능만 넣은 최소형입니다.</div>
-                  <div className="line">② 현재가는 자동 조회되며 필요하면 직접 수정할 수 있습니다.</div>
-                  <div className="line">③ 학교와 집과 휴대폰에서 같은 계정으로 쓸 수 있습니다.</div>
-                  <div className="line">④ 거래 추가와 수정은 거래 내역 탭에서 처리합니다.</div>
-                </div>
-              </div>
-            )}
 
             {activeTab === "holdings" && (
               <div className="card">
