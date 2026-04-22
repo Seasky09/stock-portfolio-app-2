@@ -87,10 +87,10 @@ th{color:var(--muted); font-weight:600; text-align:left}
 
 .loginBadge{
   display:inline-block;
-  margin-bottom:14px;
-  padding:6px 12px;
+  margin-bottom:20px;
+  padding:8px 14px;
   border-radius:999px;
-  background:#eff6ff;
+  background:linear-gradient(135deg,#dbeafe,#eff6ff);
   color:#1d4ed8;
   font-size:13px;
   font-weight:700;
@@ -103,8 +103,10 @@ th{color:var(--muted); font-weight:600; text-align:left}
 }
 
 .googleBtn{
-  font-size:16px;
-  padding:14px 16px;
+  font-size:17px;
+  padding:16px 18px;
+  border-radius:14px;
+  background:linear-gradient(135deg,#3b82f6,#2563eb);
 }
 
 .topbar h1{
