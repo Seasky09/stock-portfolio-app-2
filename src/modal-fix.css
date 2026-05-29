@@ -2,9 +2,13 @@
   align-items:center;
   overflow:auto;
   padding:24px;
+  z-index:99999;
+  isolation:isolate;
 }
 
 .modal{
+  position:relative;
+  z-index:100000;
   max-height:calc(100vh - 48px);
   overflow-y:auto;
   overscroll-behavior:contain;
