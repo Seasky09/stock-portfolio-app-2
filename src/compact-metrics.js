@@ -17,9 +17,13 @@ function compactSummaryMetrics() {
     var titleEl = metrics[i].querySelector('.metricTitle');
     var valueEl = metrics[i].querySelector('.metricValue');
     if (!titleEl || !valueEl) continue;
+
     var title = titleEl.textContent.trim();
-    if (title !== '평가손익' && title !== '실현손익') continue;
+    if (title === '평가수익률') continue;
+
     var original = valueEl.textContent.trim();
+    if (original.indexOf('원') < 0) continue;
+
     var compact = compactWonText(original);
     if (compact !== original) {
       valueEl.setAttribute('title', original);
@@ -30,7 +34,10 @@ function compactSummaryMetrics() {
 
 window.addEventListener('load', function () {
   compactSummaryMetrics();
-  window.setTimeout(compactSummaryMetrics, 300);
-  window.setTimeout(compactSummaryMetrics, 1000);
-  window.setTimeout(compactSummaryMetrics, 2500);
+  var count = 0;
+  var timer = window.setInterval(function () {
+    compactSummaryMetrics();
+    count += 1;
+    if (count >= 40) window.clearInterval(timer);
+  }, 500);
 });
