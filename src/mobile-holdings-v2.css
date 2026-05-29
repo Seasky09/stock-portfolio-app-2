@@ -1,0 +1,74 @@
+@media (max-width: 640px){
+  table:has(thead th:nth-child(8)):not(:has(thead th:nth-child(9))) tr{
+    padding:14px 14px 12px;
+  }
+
+  table:has(thead th:nth-child(8)):not(:has(thead th:nth-child(9))) td:nth-child(1){
+    display:block;
+    padding:0 0 2px;
+    border-bottom:none;
+    text-align:left;
+    font-size:18px;
+    line-height:1.35;
+    letter-spacing:-.03em;
+  }
+
+  table:has(thead th:nth-child(8)):not(:has(thead th:nth-child(9))) td:nth-child(1)::before{
+    content:"";
+    display:none;
+  }
+
+  table:has(thead th:nth-child(8)):not(:has(thead th:nth-child(9))) td:nth-child(2){
+    display:block;
+    padding:0 0 12px;
+    margin-bottom:10px;
+    border-bottom:1px solid var(--line);
+    text-align:left;
+    color:var(--muted);
+    font-size:13px;
+  }
+
+  table:has(thead th:nth-child(8)):not(:has(thead th:nth-child(9))) td:nth-child(2)::before{
+    content:"";
+    display:none;
+  }
+
+  table:has(thead th:nth-child(8)):not(:has(thead th:nth-child(9))) td:nth-child(7),
+  table:has(thead th:nth-child(8)):not(:has(thead th:nth-child(9))) td:nth-child(8){
+    border-bottom:none;
+    padding:6px 0;
+    align-items:flex-end;
+  }
+
+  table:has(thead th:nth-child(8)):not(:has(thead th:nth-child(9))) td:nth-child(7){
+    margin-top:2px;
+    font-size:18px;
+    letter-spacing:-.03em;
+  }
+
+  table:has(thead th:nth-child(8)):not(:has(thead th:nth-child(9))) td:nth-child(8){
+    margin-bottom:10px;
+    padding-bottom:12px;
+    border-bottom:1px solid var(--line);
+    font-size:16px;
+    letter-spacing:-.02em;
+  }
+
+  table:has(thead th:nth-child(8)):not(:has(thead th:nth-child(9))) td:nth-child(3),
+  table:has(thead th:nth-child(8)):not(:has(thead th:nth-child(9))) td:nth-child(4),
+  table:has(thead th:nth-child(8)):not(:has(thead th:nth-child(9))) td:nth-child(5),
+  table:has(thead th:nth-child(8)):not(:has(thead th:nth-child(9))) td:nth-child(6){
+    font-size:13px;
+    color:#334155;
+  }
+
+  table:has(thead th:nth-child(8)):not(:has(thead th:nth-child(9))) td:nth-child(5){
+    align-items:center;
+  }
+
+  table:has(thead th:nth-child(8)):not(:has(thead th:nth-child(9))) .priceInput{
+    max-width:130px;
+    padding:8px 10px;
+    font-size:13px;
+  }
+}
