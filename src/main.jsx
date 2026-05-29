@@ -4,6 +4,7 @@ import App from './App.jsx'
 import './styles.css'
 import './mobile.css'
 import './ui-polish.css'
+import './compact-metrics.js'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
