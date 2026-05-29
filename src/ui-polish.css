@@ -1,0 +1,168 @@
+/* First-pass UI polish: safer visual refinements only */
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",Arial,sans-serif;
+}
+
+.page{
+  background:
+    radial-gradient(circle at top left, rgba(37,99,235,0.05), transparent 26%),
+    #f8fafc;
+}
+
+.topbar{
+  align-items:center;
+}
+
+.topbar .row{
+  gap:10px;
+}
+
+.metrics{
+  gap:14px;
+}
+
+.metric{
+  border-color:#dbe3ef;
+  box-shadow:0 8px 24px rgba(15,23,42,0.04);
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+
+.metric:hover{
+  transform:translateY(-1px);
+  box-shadow:0 12px 28px rgba(15,23,42,0.07);
+}
+
+.metricTitle{
+  font-size:12px;
+  letter-spacing:.01em;
+}
+
+.metricValue{
+  letter-spacing:-.03em;
+}
+
+.tabs{
+  display:inline-flex;
+  padding:4px;
+  gap:4px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#eef2f7;
+}
+
+.tab{
+  border:none;
+  background:transparent;
+  border-radius:10px;
+  transition:background .15s ease, color .15s ease, box-shadow .15s ease;
+}
+
+.tab:hover{
+  background:rgba(255,255,255,.7);
+}
+
+.tab.active{
+  box-shadow:0 6px 14px rgba(37,99,235,.18);
+}
+
+.card{
+  border-color:#dbe3ef;
+  box-shadow:0 10px 30px rgba(15,23,42,0.04);
+}
+
+.card h2{
+  letter-spacing:-.03em;
+}
+
+.tableWrap{
+  border-radius:12px;
+}
+
+table{
+  background:white;
+}
+
+th{
+  background:#f8fafc;
+  font-size:13px;
+}
+
+tbody tr{
+  transition:background .12s ease;
+}
+
+tbody tr:hover{
+  background:#f8fafc;
+}
+
+.priceInput{
+  border-color:#dbe3ef;
+  background:#fbfdff;
+  font-weight:600;
+  transition:border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+
+.priceInput:focus{
+  outline:none;
+  border-color:var(--primary);
+  background:white;
+  box-shadow:0 0 0 3px rgba(37,99,235,.12);
+}
+
+.btn{
+  transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+}
+
+.btn:hover{
+  transform:translateY(-1px);
+}
+
+.btn.primary{
+  box-shadow:0 8px 18px rgba(37,99,235,.18);
+}
+
+.btn.secondary:hover{
+  background:#f8fafc;
+}
+
+@media (max-width: 640px){
+  .metrics{
+    gap:10px;
+  }
+
+  .metric{
+    box-shadow:0 6px 18px rgba(15,23,42,0.04);
+  }
+
+  .metric:hover,
+  .btn:hover{
+    transform:none;
+  }
+
+  .tabs{
+    display:grid;
+    width:100%;
+    grid-template-columns:1fr 1fr;
+    padding:4px;
+  }
+
+  .tab{
+    width:100%;
+  }
+
+  .card{
+    box-shadow:0 8px 22px rgba(15,23,42,0.04);
+  }
+
+  .tableWrap{
+    border-radius:0;
+  }
+
+  tr{
+    box-shadow:0 6px 18px rgba(15,23,42,0.04);
+  }
+
+  tbody tr:hover{
+    background:white;
+  }
+}
