@@ -1,0 +1,59 @@
+@media (max-width: 640px){
+  .page{padding:32px 12px 24px}
+  .container{width:100%; max-width:100%}
+  .topbar{flex-direction:column}
+  .topbar .row{width:100%; flex-wrap:wrap}
+  .topbar .btn{flex:1}
+  .metrics{grid-template-columns:1fr}
+  .metric{padding:14px}
+  .metricValue{font-size:22px}
+  .tabs{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+  .tab{padding:10px 8px; font-size:14px}
+  .card{padding:14px; border-radius:14px}
+  .card h2{font-size:18px; margin-top:0}
+  .formGrid{grid-template-columns:1fr}
+  .row.between{gap:10px; align-items:flex-start}
+  .row.between h2{margin-bottom:0}
+  .row.between .btn{white-space:nowrap}
+  .tableWrap{overflow:visible}
+  table{min-width:0; display:block; width:100%}
+  thead{display:none}
+  tbody{display:block}
+  tr{display:block; border:1px solid var(--line); border-radius:14px; padding:10px 12px; margin-bottom:12px; background:white}
+  td{display:flex; justify-content:space-between; gap:12px; padding:8px 0; border-bottom:1px dashed var(--line); text-align:right; font-size:14px; word-break:break-word}
+  td:last-child{border-bottom:none}
+  td::before{content:""; flex:0 0 auto; color:var(--muted); font-weight:600; text-align:left}
+  td.bold{font-size:16px}
+  td.bold::before{font-size:14px}
+  .right{text-align:right}
+  .priceInput{max-width:140px; margin-left:0}
+  .mini{margin-left:6px; padding:7px 10px}
+
+  table:has(thead th:nth-child(8)):not(:has(thead th:nth-child(9))) td:nth-child(1)::before{content:"종목명"}
+  table:has(thead th:nth-child(8)):not(:has(thead th:nth-child(9))) td:nth-child(2)::before{content:"코드"}
+  table:has(thead th:nth-child(8)):not(:has(thead th:nth-child(9))) td:nth-child(3)::before{content:"보유수량"}
+  table:has(thead th:nth-child(8)):not(:has(thead th:nth-child(9))) td:nth-child(4)::before{content:"평균단가"}
+  table:has(thead th:nth-child(8)):not(:has(thead th:nth-child(9))) td:nth-child(5)::before{content:"현재가"}
+  table:has(thead th:nth-child(8)):not(:has(thead th:nth-child(9))) td:nth-child(6)::before{content:"평가금액"}
+  table:has(thead th:nth-child(8)):not(:has(thead th:nth-child(9))) td:nth-child(7)::before{content:"평가손익"}
+  table:has(thead th:nth-child(8)):not(:has(thead th:nth-child(9))) td:nth-child(8)::before{content:"수익률"}
+
+  table:has(thead th:nth-child(10)) td:nth-child(1)::before{content:"날짜"}
+  table:has(thead th:nth-child(10)) td:nth-child(2)::before{content:"종목명"}
+  table:has(thead th:nth-child(10)) td:nth-child(3)::before{content:"코드"}
+  table:has(thead th:nth-child(10)) td:nth-child(4)::before{content:"구분"}
+  table:has(thead th:nth-child(10)) td:nth-child(5)::before{content:"수량"}
+  table:has(thead th:nth-child(10)) td:nth-child(6)::before{content:"단가"}
+  table:has(thead th:nth-child(10)) td:nth-child(7)::before{content:"수수료"}
+  table:has(thead th:nth-child(10)) td:nth-child(8)::before{content:"세금"}
+  table:has(thead th:nth-child(10)) td:nth-child(9)::before{content:"메모"}
+  table:has(thead th:nth-child(10)) td:nth-child(10)::before{content:"관리"}
+
+  table:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) td:nth-child(1)::before{content:"매도일"}
+  table:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) td:nth-child(2)::before{content:"종목명"}
+  table:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) td:nth-child(3)::before{content:"수량"}
+  table:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) td:nth-child(4)::before{content:"매도단가"}
+  table:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) td:nth-child(5)::before{content:"평균매입단가"}
+  table:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) td:nth-child(6)::before{content:"실현손익"}
+  table:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) td:nth-child(7)::before{content:"수익률"}
+}
