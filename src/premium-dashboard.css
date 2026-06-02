@@ -180,6 +180,19 @@ td{
   color:#1e293b;
 }
 
+.moneyCell,
+td.moneyCell,
+th.moneyCell{
+  white-space:nowrap;
+  word-break:keep-all;
+  font-size:clamp(11px, 0.82vw, 14px);
+  letter-spacing:-.04em;
+}
+
+.tradeAmountCol{
+  min-width:92px;
+}
+
 .priceInput{
   background:#f8fafc;
   border-color:#cbd5e1;
@@ -237,5 +250,12 @@ select:focus{
 
   .tableWrap{
     border:none;
+  }
+
+  .moneyCell,
+  td.moneyCell,
+  th.moneyCell{
+    font-size:14px;
+    letter-spacing:-.02em;
   }
 }
