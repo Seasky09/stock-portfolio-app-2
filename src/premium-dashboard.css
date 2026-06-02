@@ -111,6 +111,14 @@ body{
   backdrop-filter:blur(8px);
 }
 
+.card > .row.between{
+  padding:2px 14px 0;
+}
+
+.card > .row.between .btn{
+  margin-right:4px;
+}
+
 .card h2{
   color:#0f172a;
   font-size:22px;
@@ -193,6 +201,16 @@ th.moneyCell{
   min-width:92px;
 }
 
+table:has(thead th:nth-child(11)) th:nth-child(1),
+table:has(thead th:nth-child(11)) td:nth-child(1),
+table:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) th:nth-child(1),
+table:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) td:nth-child(1){
+  white-space:nowrap;
+  word-break:keep-all;
+  min-width:92px;
+  font-size:clamp(11px, 0.82vw, 14px);
+}
+
 .priceInput{
   background:#f8fafc;
   border-color:#cbd5e1;
@@ -242,6 +260,14 @@ select:focus{
     backdrop-filter:none;
   }
 
+  .card > .row.between{
+    padding:0 4px;
+  }
+
+  .card > .row.between .btn{
+    margin-right:0;
+  }
+
   .card h2{
     font-size:20px;
     margin-top:2px;
@@ -257,5 +283,14 @@ select:focus{
   th.moneyCell{
     font-size:14px;
     letter-spacing:-.02em;
+  }
+
+  table:has(thead th:nth-child(11)) th:nth-child(1),
+  table:has(thead th:nth-child(11)) td:nth-child(1),
+  table:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) th:nth-child(1),
+  table:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) td:nth-child(1){
+    white-space:nowrap;
+    min-width:0;
+    font-size:14px;
   }
 }
