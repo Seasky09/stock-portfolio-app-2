@@ -74,6 +74,28 @@ function addTradeAmountColumn() {
   }
 }
 
+function sortHoldingsByValuation() {
+  var tables = document.querySelectorAll('table');
+  for (var t = 0; t < tables.length; t += 1) {
+    var table = tables[t];
+    var headers = Array.prototype.slice.call(table.querySelectorAll('thead th'));
+    if (headers.length !== 8) continue;
+    if ((headers[0].textContent || '').trim() !== '종목명') continue;
+
+    var tbody = table.querySelector('tbody');
+    if (!tbody) continue;
+
+    var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+    rows.sort(function (a, b) {
+      return parseWon(b.children[5] ? b.children[5].textContent : '') - parseWon(a.children[5] ? a.children[5].textContent : '');
+    });
+
+    for (var r = 0; r < rows.length; r += 1) {
+      tbody.appendChild(rows[r]);
+    }
+  }
+}
+
 function closeModalWithEscape(event) {
   if (event.key !== 'Escape') return;
   var modalBg = document.querySelector('.modalBg');
@@ -81,14 +103,18 @@ function closeModalWithEscape(event) {
   modalBg.dispatchEvent(new MouseEvent('click', { bubbles: true }));
 }
 
-window.addEventListener('keydown', closeModalWithEscape);
-window.addEventListener('load', function () {
+function runDisplayHelpers() {
   compactSummaryMetrics();
   addTradeAmountColumn();
+  sortHoldingsByValuation();
+}
+
+window.addEventListener('keydown', closeModalWithEscape);
+window.addEventListener('load', function () {
+  runDisplayHelpers();
   var count = 0;
   var timer = window.setInterval(function () {
-    compactSummaryMetrics();
-    addTradeAmountColumn();
+    runDisplayHelpers();
     count += 1;
     if (count >= 40) window.clearInterval(timer);
   }, 500);
