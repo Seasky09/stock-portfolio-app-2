@@ -50,7 +50,7 @@ function addTradeAmountColumn() {
     if (headers.some(function (h) { return (h.textContent || '').trim() === '거래금액'; })) continue;
 
     var amountHead = document.createElement('th');
-    amountHead.className = 'right tradeAmountCol';
+    amountHead.className = 'right tradeAmountCol moneyCell';
     amountHead.textContent = '거래금액';
     headers[6].parentNode.insertBefore(amountHead, headers[6]);
 
@@ -58,15 +58,16 @@ function addTradeAmountColumn() {
     for (var r = 0; r < rows.length; r += 1) {
       var cells = rows[r].children;
       if (cells.length < 10) continue;
-      var typeText = cells[3].textContent || '';
       var qty = parseWon(cells[4].textContent);
       var price = parseWon(cells[5].textContent);
-      var fee = parseWon(cells[6].textContent);
-      var tax = parseWon(cells[7].textContent);
-      var amount = typeText.indexOf('매도') >= 0 ? qty * price - fee - tax : qty * price + fee;
+      var amount = qty * price;
+
+      cells[5].classList.add('moneyCell');
+      cells[6].classList.add('moneyCell');
+      cells[7].classList.add('moneyCell');
 
       var amountCell = document.createElement('td');
-      amountCell.className = 'right bold tradeAmountCol';
+      amountCell.className = 'right bold tradeAmountCol moneyCell';
       amountCell.textContent = formatWon(amount);
       cells[6].parentNode.insertBefore(amountCell, cells[6]);
     }
