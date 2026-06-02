@@ -32,11 +32,62 @@ function compactSummaryMetrics() {
   }
 }
 
+function parseWon(text) {
+  return Number(String(text || '').replace(/[^0-9.-]/g, '')) || 0;
+}
+
+function formatWon(value) {
+  return Math.round(value).toLocaleString('ko-KR') + '원';
+}
+
+function addTradeAmountColumn() {
+  var tables = document.querySelectorAll('table');
+  for (var t = 0; t < tables.length; t += 1) {
+    var table = tables[t];
+    var headers = Array.prototype.slice.call(table.querySelectorAll('thead th'));
+    if (headers.length < 10) continue;
+    if ((headers[0].textContent || '').trim() !== '날짜') continue;
+    if (headers.some(function (h) { return (h.textContent || '').trim() === '거래금액'; })) continue;
+
+    var amountHead = document.createElement('th');
+    amountHead.className = 'right tradeAmountCol';
+    amountHead.textContent = '거래금액';
+    headers[6].parentNode.insertBefore(amountHead, headers[6]);
+
+    var rows = table.querySelectorAll('tbody tr');
+    for (var r = 0; r < rows.length; r += 1) {
+      var cells = rows[r].children;
+      if (cells.length < 10) continue;
+      var typeText = cells[3].textContent || '';
+      var qty = parseWon(cells[4].textContent);
+      var price = parseWon(cells[5].textContent);
+      var fee = parseWon(cells[6].textContent);
+      var tax = parseWon(cells[7].textContent);
+      var amount = typeText.indexOf('매도') >= 0 ? qty * price - fee - tax : qty * price + fee;
+
+      var amountCell = document.createElement('td');
+      amountCell.className = 'right bold tradeAmountCol';
+      amountCell.textContent = formatWon(amount);
+      cells[6].parentNode.insertBefore(amountCell, cells[6]);
+    }
+  }
+}
+
+function closeModalWithEscape(event) {
+  if (event.key !== 'Escape') return;
+  var modalBg = document.querySelector('.modalBg');
+  if (!modalBg) return;
+  modalBg.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+}
+
+window.addEventListener('keydown', closeModalWithEscape);
 window.addEventListener('load', function () {
   compactSummaryMetrics();
+  addTradeAmountColumn();
   var count = 0;
   var timer = window.setInterval(function () {
     compactSummaryMetrics();
+    addTradeAmountColumn();
     count += 1;
     if (count >= 40) window.clearInterval(timer);
   }, 500);
