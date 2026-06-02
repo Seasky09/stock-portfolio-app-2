@@ -96,6 +96,22 @@ function sortHoldingsByValuation() {
   }
 }
 
+function injectLayoutFixStyles() {
+  if (document.getElementById('portfolio-layout-fix-style')) return;
+
+  var style = document.createElement('style');
+  style.id = 'portfolio-layout-fix-style';
+  style.textContent = [
+    '.card > h2{padding:2px 14px 0;margin-bottom:22px;}',
+    '.card > .tableWrap{margin-top:0;}',
+    '.card > .row.between{padding:2px 14px 0;}',
+    '.card > .row.between .btn{margin-right:4px;}',
+    '@media (max-width:640px){.card > h2{padding:0 4px;margin-bottom:18px;}.card > .row.between{padding:0 4px;}.card > .row.between .btn{margin-right:0;}}'
+  ].join('\n');
+
+  document.head.appendChild(style);
+}
+
 function closeModalWithEscape(event) {
   if (event.key !== 'Escape') return;
   var modalBg = document.querySelector('.modalBg');
@@ -104,6 +120,7 @@ function closeModalWithEscape(event) {
 }
 
 function runDisplayHelpers() {
+  injectLayoutFixStyles();
   compactSummaryMetrics();
   addTradeAmountColumn();
   sortHoldingsByValuation();
