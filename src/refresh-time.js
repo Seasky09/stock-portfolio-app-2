@@ -6,6 +6,12 @@ function formatRefreshTime(date) {
   return month + '.' + day + ' ' + hours + ':' + minutes;
 }
 
+function saveRefreshTimeNow() {
+  var nowText = formatRefreshTime(new Date());
+  window.localStorage.setItem('portfolioLastRefreshTime', nowText);
+  renderRefreshTime();
+}
+
 function renderRefreshTime() {
   var topbar = document.querySelector('.topbar');
   if (!topbar) return;
@@ -31,11 +37,26 @@ function bindRefreshButton() {
 
     button.dataset.refreshTimeBound = 'true';
     button.addEventListener('click', function () {
-      var nowText = formatRefreshTime(new Date());
-      window.localStorage.setItem('portfolioLastRefreshTime', nowText);
-      window.setTimeout(renderRefreshTime, 100);
+      window.setTimeout(saveRefreshTimeNow, 1200);
     });
   });
+}
+
+function updateRefreshTimeWhenMarketDataAppears() {
+  var hasMarketValue = !!document.querySelector('.marketValue');
+  var hasPortfolioValue = Array.prototype.slice.call(document.querySelectorAll('.metricValue')).some(function (el) {
+    return (el.textContent || '').indexOf('원') >= 0;
+  });
+
+  if (!hasMarketValue && !hasPortfolioValue) return false;
+
+  var todayKey = new Date().toISOString().slice(0, 10);
+  var savedDate = window.localStorage.getItem('portfolioLastRefreshDate');
+  if (savedDate !== todayKey) {
+    window.localStorage.setItem('portfolioLastRefreshDate', todayKey);
+    saveRefreshTimeNow();
+  }
+  return true;
 }
 
 window.addEventListener('load', function () {
@@ -46,7 +67,8 @@ window.addEventListener('load', function () {
   var timer = window.setInterval(function () {
     renderRefreshTime();
     bindRefreshButton();
+    updateRefreshTimeWhenMarketDataAppears();
     count += 1;
-    if (count >= 10) window.clearInterval(timer);
+    if (count >= 20) window.clearInterval(timer);
   }, 500);
 });
