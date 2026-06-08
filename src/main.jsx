@@ -9,6 +9,7 @@ import './premium-dashboard.css'
 import './market-and-isa.css'
 import './excel-table-tools.css'
 import './modal-fix.css'
+import './market-update-helper.js'
 import './compact-metrics.js'
 import './excel-table-tools.js'
 
