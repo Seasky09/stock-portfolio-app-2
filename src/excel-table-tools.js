@@ -57,12 +57,12 @@ function buildFilterValue(cellText) {
 }
 
 function shouldFilterColumn(label) {
-  return ['날짜', '매도일', '종목명', '코드', '구분', '메모'].indexOf(label) >= 0;
+  return ['관리', '현재가 입력'].indexOf(label) < 0;
 }
 
 function isExcelToolTarget(table) {
   var headers = Array.prototype.slice.call(table.querySelectorAll('thead th')).map(function (th) {
-    return normalizeCellText(th.textContent);
+    return normalizeCellText(th.textContent).replace(/\s*[↕↑↓].*$/, '').trim();
   });
   return headers.length >= 7 && (
     headers.indexOf('종목명') >= 0 ||
@@ -72,10 +72,18 @@ function isExcelToolTarget(table) {
 }
 
 function enhanceTable(table) {
-  if (table.dataset.excelEnhanced === 'true') return;
   if (!isExcelToolTarget(table)) return;
 
+  var originalHeaders = Array.prototype.slice.call(table.querySelectorAll('thead th')).map(function (th) {
+    return normalizeCellText(th.textContent).replace(/\s*[↕↑↓].*$/, '').trim();
+  });
+  var rowCount = table.querySelectorAll('tbody tr').length;
+  var signature = originalHeaders.join('|') + ':' + rowCount;
+
+  if (table.dataset.excelEnhanced === 'true' && table.dataset.excelSignature === signature) return;
+
   table.dataset.excelEnhanced = 'true';
+  table.dataset.excelSignature = signature;
   table.dataset.filters = '{}';
 
   var headers = Array.prototype.slice.call(table.querySelectorAll('thead th'));
@@ -83,7 +91,7 @@ function enhanceTable(table) {
   if (!tbody) return;
 
   headers.forEach(function (th, columnIndex) {
-    var originalLabel = normalizeCellText(th.textContent);
+    var originalLabel = originalHeaders[columnIndex];
     var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
     var uniqueValues = Array.from(new Set(rows.map(function (row) {
       return buildFilterValue(row.children[columnIndex] ? row.children[columnIndex].textContent : '');
@@ -103,13 +111,20 @@ function enhanceTable(table) {
       var nextDirection = currentColumn === columnIndex && currentDirection === 'asc' ? 'desc' : 'asc';
       table.dataset.sortColumn = String(columnIndex);
       table.dataset.sortDirection = nextDirection;
+
+      table.querySelectorAll('.thSortButton').forEach(function (button) {
+        var base = button.dataset.label || normalizeCellText(button.textContent).replace(/\s*[↕↑↓].*$/, '').trim();
+        button.textContent = base + ' ↕';
+      });
       labelButton.textContent = originalLabel + (nextDirection === 'asc' ? ' ↑' : ' ↓');
+
       sortRows(table, columnIndex, nextDirection);
       applyTableFilters(table);
     });
+    labelButton.dataset.label = originalLabel;
     th.appendChild(labelButton);
 
-    if (shouldFilterColumn(originalLabel) && uniqueValues.length > 0 && uniqueValues.length <= 80) {
+    if (shouldFilterColumn(originalLabel) && uniqueValues.length > 1 && uniqueValues.length <= 80) {
       var select = document.createElement('select');
       select.className = 'thFilterSelect';
       select.title = originalLabel + ' 필터';
@@ -139,60 +154,85 @@ function enhanceTable(table) {
     }
   });
 
-  var resetButton = document.createElement('button');
-  resetButton.type = 'button';
-  resetButton.className = 'tableResetButton';
-  resetButton.textContent = '필터 초기화';
-  resetButton.addEventListener('click', function () {
-    table.dataset.filters = '{}';
-    table.querySelectorAll('.thFilterSelect').forEach(function (select) { select.value = ''; });
-    table.querySelectorAll('tbody tr').forEach(function (row) { row.style.display = ''; });
-  });
-
   var tableWrap = table.closest('.tableWrap');
   if (tableWrap && !tableWrap.previousElementSibling?.classList?.contains('tableToolBar')) {
+    var resetButton = document.createElement('button');
+    resetButton.type = 'button';
+    resetButton.className = 'tableResetButton';
+    resetButton.textContent = '필터 초기화';
+    resetButton.addEventListener('click', function () {
+      table.dataset.filters = '{}';
+      table.querySelectorAll('.thFilterSelect').forEach(function (select) { select.value = ''; });
+      table.querySelectorAll('tbody tr').forEach(function (row) { row.style.display = ''; });
+    });
+
     var toolbar = document.createElement('div');
     toolbar.className = 'tableToolBar';
-    toolbar.innerHTML = '<span>열 제목 클릭: 정렬 / 드롭다운: 필터</span>';
+    toolbar.appendChild(document.createElement('span'));
     toolbar.appendChild(resetButton);
     tableWrap.parentNode.insertBefore(toolbar, tableWrap);
   }
 }
 
+function removeLegacyStatusFilters() {
+  document.querySelectorAll('.card > div').forEach(function (node) {
+    if (node.classList.contains('tableToolBar')) return;
+    if (!node.querySelector('select')) return;
+    var text = normalizeCellText(node.textContent);
+    if (text === '상태 전체' || text.startsWith('상태 전체')) {
+      node.remove();
+    }
+  });
+}
+
 function simplifyKospiCard() {
   var card = document.querySelector('.marketCard');
-  if (!card || card.dataset.simplified === 'true') return;
+  if (!card) return;
 
   var valueEl = card.querySelector('.marketValue');
   var changeEl = card.querySelector('.marketChange');
   var chart = card.querySelector('.marketChart');
   if (!valueEl || !changeEl) return;
 
+  if (chart) chart.style.display = 'none';
+  card.querySelectorAll('.marketPeriodLabel').forEach(function (node) { node.remove(); });
+
   var latest = parseNumberLike(valueEl.textContent) || 0;
   var changeMatch = normalizeCellText(changeEl.textContent).match(/([+\-]?[0-9,.]+)\s*\(([^)]+)\)/);
   var change = changeMatch ? parseNumberLike(changeMatch[1]) || 0 : 0;
   var previous = latest - change;
+  var changePct = changeMatch ? changeMatch[2] : '';
 
-  if (chart) chart.style.display = 'none';
+  var details = card.querySelector('.marketDetails');
+  if (!details) {
+    details = document.createElement('div');
+    details.className = 'marketDetails';
+    card.appendChild(details);
+  }
 
-  var details = document.createElement('div');
-  details.className = 'marketDetails';
   details.innerHTML =
     '<div><span>전일 종가</span><strong>' + previous.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</strong></div>' +
     '<div><span>전일 대비</span><strong>' + (change > 0 ? '+' : '') + change.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + 'p</strong></div>' +
-    '<div><span>등락률</span><strong>' + normalizeCellText(changeEl.textContent).replace(/^.*\(([^)]+)\).*$/, '$1') + '</strong></div>';
-
-  card.appendChild(details);
-  card.dataset.simplified = 'true';
+    '<div><span>등락률</span><strong>' + changePct + '</strong></div>';
 }
 
 function runExcelTableTools() {
+  removeLegacyStatusFilters();
   document.querySelectorAll('table').forEach(enhanceTable);
   simplifyKospiCard();
 }
 
+var excelToolsTimer = null;
+function scheduleExcelTableTools() {
+  window.clearTimeout(excelToolsTimer);
+  excelToolsTimer = window.setTimeout(runExcelTableTools, 80);
+}
+
 window.addEventListener('load', function () {
   runExcelTableTools();
+  var observer = new MutationObserver(scheduleExcelTableTools);
+  observer.observe(document.body, { childList: true, subtree: true });
+
   var count = 0;
   var timer = window.setInterval(function () {
     runExcelTableTools();
