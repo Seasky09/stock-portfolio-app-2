@@ -10,6 +10,7 @@ import './market-and-isa.css'
 import './excel-table-tools.css'
 import './modal-fix.css'
 import './compact-metrics.js'
+import './refresh-time.js'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
