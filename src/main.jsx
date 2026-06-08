@@ -7,8 +7,10 @@ import './ui-polish.css'
 import './mobile-holdings-v2.css'
 import './premium-dashboard.css'
 import './market-and-isa.css'
+import './excel-table-tools.css'
 import './modal-fix.css'
 import './compact-metrics.js'
+import './excel-table-tools.js'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
