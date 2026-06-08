@@ -57,6 +57,21 @@ body{
   margin-top:6px;
 }
 
+.lastRefreshTime{
+  position:absolute;
+  right:0;
+  top:58px;
+  padding:4px 10px;
+  border:1px solid rgba(203,213,225,.75);
+  border-radius:999px;
+  background:rgba(255,255,255,.72);
+  color:#64748b;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:-.02em;
+  box-shadow:0 8px 18px rgba(15,23,42,.045);
+}
+
 .metrics{
   margin-bottom:22px;
 }
@@ -233,6 +248,7 @@ select:focus{
   .topbar{
     min-height:auto;
     gap:14px;
+    padding-bottom:30px;
   }
 
   .topbar::before{
@@ -246,6 +262,12 @@ select:focus{
 
   .topbar .btn{
     min-height:42px;
+  }
+
+  .lastRefreshTime{
+    top:auto;
+    right:0;
+    bottom:0;
   }
 
   .metrics{
