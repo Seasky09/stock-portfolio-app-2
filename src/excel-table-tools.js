@@ -78,9 +78,8 @@ function resetTable(table) {
 }
 
 function placeResetButton(table) {
-  var tableWrap = table.closest('.tableWrap');
   var card = table.closest('.card');
-  if (!tableWrap || !card) return;
+  if (!card) return;
   if (card.querySelector('.tableResetButton')) return;
 
   var resetButton = document.createElement('button');
@@ -154,6 +153,7 @@ function enhanceTable(table) {
     labelButton.className = 'thSortButton';
     labelButton.textContent = originalLabel + ' ↕';
     labelButton.title = '클릭하면 정렬됩니다';
+    labelButton.dataset.label = originalLabel;
     labelButton.addEventListener('click', function () {
       var currentColumn = Number(table.dataset.sortColumn || -1);
       var currentDirection = table.dataset.sortDirection || 'desc';
@@ -170,7 +170,6 @@ function enhanceTable(table) {
       sortRows(table, columnIndex, nextDirection);
       applyTableFilters(table);
     });
-    labelButton.dataset.label = originalLabel;
     th.appendChild(labelButton);
 
     if (shouldFilterColumn(originalLabel) && uniqueValues.length > 1 && uniqueValues.length <= 80) {
@@ -238,6 +237,10 @@ function simplifyKospiCard() {
   var change = changeMatch ? parseNumberLike(changeMatch[1]) || 0 : 0;
   var previous = latest - change;
   var changePct = changeMatch ? changeMatch[2] : '';
+  var nextHtml =
+    '<div><span>전일 종가</span><strong>' + previous.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</strong></div>' +
+    '<div><span>전일 대비</span><strong>' + (change > 0 ? '+' : '') + change.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + 'p</strong></div>' +
+    '<div><span>등락률</span><strong>' + changePct + '</strong></div>';
 
   var details = card.querySelector('.marketDetails');
   if (!details) {
@@ -246,10 +249,7 @@ function simplifyKospiCard() {
     card.appendChild(details);
   }
 
-  details.innerHTML =
-    '<div><span>전일 종가</span><strong>' + previous.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</strong></div>' +
-    '<div><span>전일 대비</span><strong>' + (change > 0 ? '+' : '') + change.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + 'p</strong></div>' +
-    '<div><span>등락률</span><strong>' + changePct + '</strong></div>';
+  if (details.innerHTML !== nextHtml) details.innerHTML = nextHtml;
 }
 
 function runExcelTableTools() {
@@ -262,18 +262,25 @@ function runExcelTableTools() {
 var excelToolsTimer = null;
 function scheduleExcelTableTools() {
   window.clearTimeout(excelToolsTimer);
-  excelToolsTimer = window.setTimeout(runExcelTableTools, 80);
+  excelToolsTimer = window.setTimeout(runExcelTableTools, 120);
 }
 
 window.addEventListener('load', function () {
   runExcelTableTools();
-  var observer = new MutationObserver(scheduleExcelTableTools);
-  observer.observe(document.body, { childList: true, subtree: true });
+
+  document.addEventListener('click', function (event) {
+    var target = event.target;
+    if (!target) return;
+    if (target.classList && (target.classList.contains('tab') || target.classList.contains('btn'))) {
+      scheduleExcelTableTools();
+      window.setTimeout(runExcelTableTools, 500);
+    }
+  });
 
   var count = 0;
   var timer = window.setInterval(function () {
     runExcelTableTools();
     count += 1;
-    if (count >= 30) window.clearInterval(timer);
-  }, 500);
+    if (count >= 8) window.clearInterval(timer);
+  }, 700);
 });
