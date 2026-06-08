@@ -1,12 +1,16 @@
 .tableToolBar{
   display:flex;
   align-items:center;
-  justify-content:space-between;
+  justify-content:flex-end;
   gap:12px;
   padding:0 14px 12px;
   color:#64748b;
   font-size:12px;
   font-weight:700;
+}
+
+.tableToolBar span{
+  display:none;
 }
 
 .tableResetButton{
@@ -61,7 +65,8 @@
   align-items:center;
 }
 
-.marketCard .marketChart{
+.marketCard .marketChart,
+.marketPeriodLabel{
   display:none !important;
 }
 
@@ -100,13 +105,8 @@
 
 @media (max-width: 640px){
   .tableToolBar{
-    flex-direction:column;
-    align-items:stretch;
+    justify-content:stretch;
     padding:0 4px 12px;
-  }
-
-  .tableToolBar span{
-    line-height:1.35;
   }
 
   .tableResetButton{
