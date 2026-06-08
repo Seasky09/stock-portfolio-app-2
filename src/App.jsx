@@ -47,6 +47,10 @@ function signedPct(value) {
   return `${sign}${n.toFixed(2)}%`;
 }
 
+function tradeAccount(raw) {
+  return String(raw?.memo || "").toUpperCase().includes("ISA") ? "isa" : "regular";
+}
+
 function computePortfolio(trades, prices) {
   const sorted = [...trades].sort(
     (a, b) => a.date.localeCompare(b.date) || (a.created_at || "").localeCompare(b.created_at || "")
@@ -57,16 +61,20 @@ function computePortfolio(trades, prices) {
   let totalRealized = 0;
 
   for (const raw of sorted) {
+    const account = tradeAccount(raw);
     const t = {
       ...raw,
+      account,
       qty: Number(raw.qty || 0),
       price: Number(raw.price || 0),
       fee: Number(raw.fee || 0),
       tax: Number(raw.tax || 0),
     };
 
-    if (!buckets[t.ticker]) {
-      buckets[t.ticker] = {
+    const bucketKey = `${account}:${t.ticker}`;
+    if (!buckets[bucketKey]) {
+      buckets[bucketKey] = {
+        account,
         ticker: t.ticker,
         stock_name: t.stock_name,
         qty: 0,
@@ -74,7 +82,7 @@ function computePortfolio(trades, prices) {
       };
     }
 
-    const bucket = buckets[t.ticker];
+    const bucket = buckets[bucketKey];
 
     if (t.type === "buy") {
       bucket.qty += t.qty;
@@ -116,7 +124,11 @@ function computePortfolio(trades, prices) {
         gain,
         gainPct,
       };
-    });
+    })
+    .sort((a, b) => b.valuation - a.valuation);
+
+  const regularHoldings = holdings.filter((item) => item.account !== "isa");
+  const isaHoldings = holdings.filter((item) => item.account === "isa");
 
   const totalCost = holdings.reduce((sum, item) => sum + item.totalCost, 0);
   const totalValuation = holdings.reduce((sum, item) => sum + item.valuation, 0);
@@ -125,6 +137,8 @@ function computePortfolio(trades, prices) {
 
   return {
     holdings,
+    regularHoldings,
+    isaHoldings,
     realizedRows: realizedRows.reverse(),
     totalRealized,
     totalCost,
@@ -134,9 +148,10 @@ function computePortfolio(trades, prices) {
   };
 }
 
-function getSellableQty(trades, ticker, editingId = null) {
+function getSellableQty(trades, ticker, editingId = null, memo = "") {
+  const account = tradeAccount({ memo });
   const relevant = trades
-    .filter((t) => t.ticker === ticker && t.id !== editingId)
+    .filter((t) => t.ticker === ticker && t.id !== editingId && tradeAccount(t) === account)
     .sort((a, b) => a.date.localeCompare(b.date));
 
   let qty = 0;
@@ -148,6 +163,24 @@ function getSellableQty(trades, ticker, editingId = null) {
 
 function gainClass(value) {
   return Number(value || 0) >= 0 ? "positive" : "negative";
+}
+
+function chartPolyline(points, width = 220, height = 58) {
+  const clean = (points || []).filter((item) => Number.isFinite(Number(item.close)));
+  if (clean.length < 2) return "";
+
+  const values = clean.map((item) => Number(item.close));
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 1;
+
+  return clean
+    .map((item, index) => {
+      const x = (index / (clean.length - 1)) * width;
+      const y = height - ((Number(item.close) - min) / range) * height;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    })
+    .join(" ");
 }
 
 export default function App() {
@@ -163,6 +196,7 @@ export default function App() {
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [appLoading, setAppLoading] = useState(true);
+  const [kospi, setKospi] = useState(null);
 
   useEffect(() => {
     if (!supabase) {
@@ -186,10 +220,12 @@ export default function App() {
   useEffect(() => {
     if (session) {
       fetchAll();
+      fetchKospi();
     } else {
       setTrades([]);
       setManualPrices({});
       setLivePrices({});
+      setKospi(null);
     }
   }, [session]);
 
@@ -259,6 +295,24 @@ export default function App() {
     }
   }
 
+  async function fetchKospi() {
+    try {
+      const response = await fetch(`/api/history?symbol=${encodeURIComponent("^KS11")}&range=1mo&interval=1d`);
+      const data = await response.json();
+      if (!response.ok) throw new Error(data?.error || "KOSPI 조회 실패");
+
+      const points = data.points || [];
+      const latest = Number(data.regularMarketPrice ?? points.at(-1)?.close ?? 0);
+      const previous = Number(data.chartPreviousClose ?? points.at(-2)?.close ?? 0);
+      const change = previous ? latest - previous : 0;
+      const changePct = previous ? (change / previous) * 100 : 0;
+
+      setKospi({ ...data, latest, previous, change, changePct });
+    } catch (err) {
+      setKospi(null);
+    }
+  }
+
   const mergedPrices = useMemo(
     () => ({ ...livePrices, ...manualPrices }),
     [livePrices, manualPrices]
@@ -268,6 +322,8 @@ export default function App() {
     () => computePortfolio(trades, mergedPrices),
     [trades, mergedPrices]
   );
+
+  const kospiLine = useMemo(() => chartPolyline(kospi?.points || []), [kospi]);
 
   function openCreateDialog() {
     setForm({ ...EMPTY_FORM, date: new Date().toISOString().slice(0, 10) });
@@ -312,7 +368,7 @@ export default function App() {
     if (fee < 0 || tax < 0) return "수수료와 세금은 0 이상이어야 합니다.";
 
     if (form.type === "sell") {
-      const sellableQty = getSellableQty(trades, form.ticker, form.id);
+      const sellableQty = getSellableQty(trades, form.ticker, form.id, form.memo);
       if (qty > sellableQty) {
         return `매도 가능 수량(${sellableQty}주)을 초과했습니다.`;
       }
@@ -408,6 +464,56 @@ export default function App() {
     setInfo("로그아웃되었습니다.");
   }
 
+  function renderHoldingsTable(rows) {
+    if (rows.length === 0) {
+      return <div className="muted">보유 종목이 없습니다.</div>;
+    }
+
+    return (
+      <div className="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>종목명</th>
+              <th>코드</th>
+              <th className="right">보유수량</th>
+              <th className="right">평균단가</th>
+              <th className="right">현재가 입력</th>
+              <th className="right">평가금액</th>
+              <th className="right">평가손익</th>
+              <th className="right">수익률</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={`${row.account}-${row.ticker}`}>
+                <td className="bold">{row.stock_name}</td>
+                <td>{row.ticker}</td>
+                <td className="right">{Number(row.qty).toLocaleString("ko-KR")}</td>
+                <td className="right">{won(Math.round(row.avgPrice))}</td>
+                <td className="right">
+                  <input
+                    className="priceInput"
+                    type="text"
+                    inputMode="numeric"
+                    value={Number(manualPrices[row.ticker] ?? livePrices[row.ticker] ?? 0).toLocaleString("ko-KR")}
+                    onChange={(e) => {
+                      const raw = e.target.value.replaceAll(",", "").replace(/[^\d]/g, "");
+                      saveManualPrice(row.ticker, raw);
+                    }}
+                  />
+                </td>
+                <td className="right">{won(Math.round(row.valuation))}</td>
+                <td className={`right bold ${gainClass(row.gain)}`}>{signedWon(Math.round(row.gain))}</td>
+                <td className={`right bold ${gainClass(row.gainPct)}`}>{signedPct(row.gainPct)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
   if (loading) {
     return <div className="page"><div className="card">불러오는 중입니다...</div></div>;
   }
@@ -440,6 +546,7 @@ export default function App() {
                 onClick={async () => {
                   await fetchAll();
                   await fetchLivePrices();
+                  await fetchKospi();
                 }}
               >
                 {priceLoading ? "갱신 중..." : "현재가 갱신"}
@@ -464,6 +571,21 @@ export default function App() {
           </div>
         ) : (
           <>
+            {kospi && (
+              <div className="marketCard">
+                <div>
+                  <div className="marketLabel">KOSPI</div>
+                  <div className="marketValue">{kospi.latest.toLocaleString("ko-KR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                  <div className={`marketChange ${gainClass(kospi.change)}`}>
+                    {kospi.change > 0 ? "+" : ""}{kospi.change.toFixed(2)} ({kospi.changePct > 0 ? "+" : ""}{kospi.changePct.toFixed(2)}%)
+                  </div>
+                </div>
+                <svg className="marketChart" viewBox="0 0 220 58" preserveAspectRatio="none" aria-label="KOSPI 1개월 그래프">
+                  <polyline points={kospiLine} fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+            )}
+
             <div className="metrics">
               <Metric title="총 투자원금" value={won(summary.totalCost)} />
               <Metric title="현재 평가금액" value={won(summary.totalValuation)} />
@@ -489,51 +611,15 @@ export default function App() {
             </div>
 
             {activeTab === "holdings" && (
-              <div className="card">
-                <h2>보유 종목</h2>
-                {summary.holdings.length === 0 ? (
-                  <div className="muted">보유 종목이 없습니다.</div>
-                ) : (
-                  <div className="tableWrap">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>종목명</th>
-                          <th>코드</th>
-                          <th className="right">보유수량</th>
-                          <th className="right">평균단가</th>
-                          <th className="right">현재가 입력</th>
-                          <th className="right">평가금액</th>
-                          <th className="right">평가손익</th>
-                          <th className="right">수익률</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {summary.holdings.map((row) => (
-                          <tr key={row.ticker}>
-                            <td className="bold">{row.stock_name}</td>
-                            <td>{row.ticker}</td>
-                            <td className="right">{Number(row.qty).toLocaleString("ko-KR")}</td>
-                            <td className="right">{won(Math.round(row.avgPrice))}</td>
-                            <td className="right">
-                              <input
-  className="priceInput"
-  type="text"
-  inputMode="numeric"
-  value={Number(manualPrices[row.ticker] ?? livePrices[row.ticker] ?? 0).toLocaleString("ko-KR")}
-  onChange={(e) => {
-    const raw = e.target.value.replaceAll(",", "").replace(/[^\d]/g, "");
-    saveManualPrice(row.ticker, raw);
-  }}
-/>
-                            </td>
-                            <td className="right">{won(Math.round(row.valuation))}</td>
-                            <td className={`right bold ${gainClass(row.gain)}`}>{signedWon(Math.round(row.gain))}</td>
-                            <td className={`right bold ${gainClass(row.gainPct)}`}>{signedPct(row.gainPct)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+              <div className="holdingsStack">
+                <div className="card">
+                  <h2>보유 종목</h2>
+                  {renderHoldingsTable(summary.regularHoldings)}
+                </div>
+                {summary.isaHoldings.length > 0 && (
+                  <div className="card isaCard">
+                    <h2>보유 종목(ISA)</h2>
+                    {renderHoldingsTable(summary.isaHoldings)}
                   </div>
                 )}
               </div>
