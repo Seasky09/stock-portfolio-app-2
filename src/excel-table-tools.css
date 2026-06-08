@@ -1,16 +1,28 @@
 .tableToolBar{
-  display:flex;
-  align-items:center;
-  justify-content:flex-end;
-  gap:12px;
-  padding:0 14px 12px;
-  color:#64748b;
-  font-size:12px;
-  font-weight:700;
+  display:none !important;
 }
 
-.tableToolBar span{
-  display:none;
+.cardTitleRow,
+.cardHeaderActions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.cardTitleRow{
+  justify-content:space-between;
+  padding:2px 14px 0;
+  margin-bottom:22px;
+}
+
+.cardTitleRow h2,
+.row.between h2{
+  margin-bottom:0 !important;
+}
+
+.cardHeaderActions{
+  margin-left:auto;
+  justify-content:flex-end;
 }
 
 .tableResetButton{
@@ -22,11 +34,26 @@
   font-size:12px;
   font-weight:800;
   cursor:pointer;
+  white-space:nowrap;
 }
 
 .tableResetButton:hover{
   background:white;
   box-shadow:0 8px 18px rgba(15,23,42,.06);
+}
+
+.marketUpdateTime{
+  display:inline-flex;
+  align-items:center;
+  min-height:36px;
+  padding:0 10px;
+  border:1px solid rgba(203,213,225,.75);
+  border-radius:999px;
+  background:rgba(255,255,255,.68);
+  color:#64748b;
+  font-size:12px;
+  font-weight:800;
+  white-space:nowrap;
 }
 
 .filterableTh{
@@ -104,14 +131,28 @@
 }
 
 @media (max-width: 640px){
-  .tableToolBar{
-    justify-content:stretch;
-    padding:0 4px 12px;
+  .cardTitleRow,
+  .cardHeaderActions{
+    align-items:flex-start;
+  }
+
+  .cardTitleRow{
+    padding:0 4px;
+    margin-bottom:18px;
+  }
+
+  .cardHeaderActions{
+    flex-direction:column;
   }
 
   .tableResetButton{
+    min-height:36px;
+  }
+
+  .marketUpdateTime{
     width:100%;
-    min-height:38px;
+    justify-content:center;
+    order:3;
   }
 
   .filterableTh,
