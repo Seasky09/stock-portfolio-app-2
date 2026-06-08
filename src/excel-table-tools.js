@@ -71,6 +71,52 @@ function isExcelToolTarget(table) {
   );
 }
 
+function resetTable(table) {
+  table.dataset.filters = '{}';
+  table.querySelectorAll('.thFilterSelect').forEach(function (select) { select.value = ''; });
+  table.querySelectorAll('tbody tr').forEach(function (row) { row.style.display = ''; });
+}
+
+function placeResetButton(table) {
+  var tableWrap = table.closest('.tableWrap');
+  var card = table.closest('.card');
+  if (!tableWrap || !card) return;
+  if (card.querySelector('.tableResetButton')) return;
+
+  var resetButton = document.createElement('button');
+  resetButton.type = 'button';
+  resetButton.className = 'tableResetButton';
+  resetButton.textContent = '필터 초기화';
+  resetButton.addEventListener('click', function () { resetTable(table); });
+
+  var rowHeader = Array.prototype.slice.call(card.children).find(function (node) {
+    return node.classList && node.classList.contains('row') && node.classList.contains('between') && node.querySelector('h2');
+  });
+
+  if (rowHeader) {
+    var actionGroup = rowHeader.querySelector('.cardHeaderActions');
+    if (!actionGroup) {
+      actionGroup = document.createElement('div');
+      actionGroup.className = 'cardHeaderActions';
+      Array.prototype.slice.call(rowHeader.children).forEach(function (child) {
+        if (child.tagName === 'BUTTON') actionGroup.appendChild(child);
+      });
+      rowHeader.appendChild(actionGroup);
+    }
+    actionGroup.insertBefore(resetButton, actionGroup.firstChild);
+    return;
+  }
+
+  var h2 = Array.prototype.slice.call(card.children).find(function (node) { return node.tagName === 'H2'; });
+  if (h2) {
+    var titleRow = document.createElement('div');
+    titleRow.className = 'cardTitleRow';
+    card.insertBefore(titleRow, h2);
+    titleRow.appendChild(h2);
+    titleRow.appendChild(resetButton);
+  }
+}
+
 function enhanceTable(table) {
   if (!isExcelToolTarget(table)) return;
 
@@ -80,7 +126,10 @@ function enhanceTable(table) {
   var rowCount = table.querySelectorAll('tbody tr').length;
   var signature = originalHeaders.join('|') + ':' + rowCount;
 
-  if (table.dataset.excelEnhanced === 'true' && table.dataset.excelSignature === signature) return;
+  if (table.dataset.excelEnhanced === 'true' && table.dataset.excelSignature === signature) {
+    placeResetButton(table);
+    return;
+  }
 
   table.dataset.excelEnhanced = 'true';
   table.dataset.excelSignature = signature;
@@ -154,24 +203,7 @@ function enhanceTable(table) {
     }
   });
 
-  var tableWrap = table.closest('.tableWrap');
-  if (tableWrap && !tableWrap.previousElementSibling?.classList?.contains('tableToolBar')) {
-    var resetButton = document.createElement('button');
-    resetButton.type = 'button';
-    resetButton.className = 'tableResetButton';
-    resetButton.textContent = '필터 초기화';
-    resetButton.addEventListener('click', function () {
-      table.dataset.filters = '{}';
-      table.querySelectorAll('.thFilterSelect').forEach(function (select) { select.value = ''; });
-      table.querySelectorAll('tbody tr').forEach(function (row) { row.style.display = ''; });
-    });
-
-    var toolbar = document.createElement('div');
-    toolbar.className = 'tableToolBar';
-    toolbar.appendChild(document.createElement('span'));
-    toolbar.appendChild(resetButton);
-    tableWrap.parentNode.insertBefore(toolbar, tableWrap);
-  }
+  placeResetButton(table);
 }
 
 function removeLegacyStatusFilters() {
@@ -183,6 +215,10 @@ function removeLegacyStatusFilters() {
       node.remove();
     }
   });
+}
+
+function removeLegacyToolbars() {
+  document.querySelectorAll('.tableToolBar').forEach(function (node) { node.remove(); });
 }
 
 function simplifyKospiCard() {
@@ -218,6 +254,7 @@ function simplifyKospiCard() {
 
 function runExcelTableTools() {
   removeLegacyStatusFilters();
+  removeLegacyToolbars();
   document.querySelectorAll('table').forEach(enhanceTable);
   simplifyKospiCard();
 }
