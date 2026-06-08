@@ -1,0 +1,33 @@
+/* Header spacing fix: buttons and last refresh time */
+.topbar{
+  min-height:82px;
+  margin-bottom:20px;
+  align-items:flex-start;
+}
+
+.topbar .row{
+  gap:12px;
+}
+
+.lastRefreshTime{
+  right:2px !important;
+  top:62px !important;
+  padding:5px 12px !important;
+}
+
+@media (max-width: 640px){
+  .topbar{
+    padding-bottom:36px;
+  }
+
+  .topbar .row{
+    gap:10px;
+  }
+
+  .lastRefreshTime{
+    top:auto !important;
+    right:0 !important;
+    bottom:2px !important;
+    padding:5px 11px !important;
+  }
+}
