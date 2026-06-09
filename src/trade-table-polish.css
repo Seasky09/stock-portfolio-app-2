@@ -1,0 +1,101 @@
+/* Trade table polish: button spacing, inline actions, and long-name truncation */
+.topbar .row.gap8{
+  gap:16px !important;
+  align-items:flex-start;
+}
+
+.topbar .row.gap8 .btn{
+  min-width:92px;
+}
+
+.lastRefreshTime{
+  top:68px !important;
+  right:4px !important;
+  margin-top:6px !important;
+}
+
+.cardHeaderActions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:10px;
+}
+
+.cardHeaderActions .btn,
+.cardHeaderActions .tableResetButton{
+  min-height:42px;
+  padding:0 14px;
+  border-radius:12px;
+  font-size:13px;
+  font-weight:800;
+  line-height:1;
+  white-space:nowrap;
+}
+
+.cardHeaderActions .tableResetButton{
+  background:rgba(255,255,255,.9);
+}
+
+/* 거래내역: 종목명은 한 줄로 유지하고 길면 말줄임 */
+table:has(thead th:nth-child(10)) td:nth-child(2){
+  max-width:190px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+/* 거래내역: 관리 버튼 가로 배치 */
+table:has(thead th:nth-child(10)) td:nth-child(10),
+table:has(thead th:nth-child(11)) td:nth-child(11){
+  white-space:nowrap;
+  min-width:96px;
+}
+
+table:has(thead th:nth-child(10)) td:nth-child(10) .mini,
+table:has(thead th:nth-child(11)) td:nth-child(11) .mini{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  margin-left:6px;
+  margin-top:0;
+  min-width:42px;
+  height:34px;
+}
+
+table:has(thead th:nth-child(10)) td:nth-child(10) .mini:first-child,
+table:has(thead th:nth-child(11)) td:nth-child(11) .mini:first-child{
+  margin-left:0;
+}
+
+@media (max-width: 640px){
+  .topbar .row.gap8{
+    gap:10px !important;
+  }
+
+  .lastRefreshTime{
+    top:auto !important;
+    right:0 !important;
+    bottom:0 !important;
+    margin-top:0 !important;
+  }
+
+  .cardHeaderActions{
+    flex-direction:row;
+    gap:8px;
+  }
+
+  .cardHeaderActions .btn,
+  .cardHeaderActions .tableResetButton{
+    flex:1;
+    min-height:40px;
+    padding:0 10px;
+  }
+
+  table:has(thead th:nth-child(10)) td:nth-child(2),
+  table:has(thead th:nth-child(11)) td:nth-child(2){
+    max-width:none;
+    white-space:normal;
+    overflow:visible;
+    text-overflow:clip;
+  }
+}
