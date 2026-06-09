@@ -121,13 +121,22 @@ function resetTableFilters(table, datasetKey) {
   });
 }
 
+function cleanupResetButtons(card, markerClass) {
+  var buttons = Array.prototype.slice.call(card.querySelectorAll('.tableResetButton.' + markerClass));
+  buttons.slice(1).forEach(function (button) { button.remove(); });
+  return buttons[0] || null;
+}
+
 function placeResetButton(table, options) {
   var card = table.closest('.card');
-  if (!card || card.querySelector('.' + options.buttonClass)) return;
+  if (!card) return;
+
+  var existingButton = cleanupResetButtons(card, options.markerClass);
+  if (existingButton) return;
 
   var resetButton = document.createElement('button');
   resetButton.type = 'button';
-  resetButton.className = 'tableResetButton ' + options.buttonClass;
+  resetButton.className = 'tableResetButton ' + options.markerClass;
   resetButton.textContent = '필터 초기화';
   resetButton.addEventListener('click', function () {
     resetTableFilters(table, options.filterDatasetKey);
@@ -260,7 +269,7 @@ function enhanceTradesTable() {
     filterDatasetKey: 'tradeFilters',
     sortColumnKey: 'tradeSortColumn',
     sortDirectionKey: 'tradeSortDirection',
-    buttonClass: 'tradeFilterResetButton',
+    markerClass: 'tradeFilterResetButton',
     isFilterable: filterableTradeColumn,
     isSortable: sortableTradeColumn
   });
@@ -274,7 +283,7 @@ function enhanceHoldingTables() {
       filterDatasetKey: 'holdingFilters',
       sortColumnKey: 'holdingSortColumn',
       sortDirectionKey: 'holdingSortDirection',
-      buttonClass: 'holdingFilterResetButton holdingFilterResetButton' + index,
+      markerClass: 'holdingFilterResetButton' + index,
       isFilterable: filterableHoldingColumn,
       isSortable: sortableHoldingColumn
     });
