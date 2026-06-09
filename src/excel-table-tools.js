@@ -215,11 +215,16 @@ function enhanceTradesTable() {
 var tradeExcelTimer = null;
 function scheduleTradesTableEnhance() {
   window.clearTimeout(tradeExcelTimer);
-  tradeExcelTimer = window.setTimeout(enhanceTradesTable, 160);
+  tradeExcelTimer = window.setTimeout(enhanceTradesTable, 120);
+  [260, 650, 1200].forEach(function (delay) {
+    window.setTimeout(enhanceTradesTable, delay);
+  });
 }
 
 window.addEventListener('load', function () {
-  window.setTimeout(enhanceTradesTable, 350);
+  [250, 700, 1300].forEach(function (delay) {
+    window.setTimeout(enhanceTradesTable, delay);
+  });
 
   document.addEventListener('click', function (event) {
     var target = event.target;
@@ -227,5 +232,11 @@ window.addEventListener('load', function () {
     if (target.classList.contains('tab') || target.classList.contains('btn')) {
       scheduleTradesTableEnhance();
     }
+  }, true);
+
+  window.addEventListener('focus', scheduleTradesTableEnhance);
+  window.addEventListener('pageshow', scheduleTradesTableEnhance);
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) scheduleTradesTableEnhance();
   });
 });
