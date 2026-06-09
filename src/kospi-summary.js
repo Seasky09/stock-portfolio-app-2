@@ -52,14 +52,31 @@ function enhanceKospiSummary() {
   ].join('');
 }
 
+var kospiSummaryTimer = null;
+function scheduleKospiSummary() {
+  window.clearTimeout(kospiSummaryTimer);
+  kospiSummaryTimer = window.setTimeout(enhanceKospiSummary, 80);
+  [220, 500, 1000].forEach(function (delay) {
+    window.setTimeout(enhanceKospiSummary, delay);
+  });
+}
+
 window.addEventListener('load', function () {
-  enhanceKospiSummary();
-  var count = 0;
-  var timer = window.setInterval(function () {
-    enhanceKospiSummary();
-    count += 1;
-    if (count >= 12) window.clearInterval(timer);
-  }, 500);
+  [150, 500, 1000, 2000, 3500].forEach(function (delay) {
+    window.setTimeout(enhanceKospiSummary, delay);
+  });
+
+  document.addEventListener('click', function (event) {
+    var target = event.target;
+    if (!target || !target.classList) return;
+    if (target.classList.contains('tab') || target.classList.contains('btn')) {
+      scheduleKospiSummary();
+    }
+  }, true);
 });
 
-window.addEventListener('focus', enhanceKospiSummary);
+window.addEventListener('focus', scheduleKospiSummary);
+window.addEventListener('pageshow', scheduleKospiSummary);
+document.addEventListener('visibilitychange', function () {
+  if (!document.hidden) scheduleKospiSummary();
+});
