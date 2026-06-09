@@ -2,6 +2,13 @@ function normalizeCellText(text) {
   return String(text || '').replace(/\s+/g, ' ').trim();
 }
 
+function cleanHeaderLabel(text) {
+  return normalizeCellText(text)
+    .replace(/\s*[↕↑↓].*$/, '')
+    .replace(/전체$/, '')
+    .trim();
+}
+
 function parseNumberLike(text) {
   var cleaned = normalizeCellText(text).replace(/[^0-9.\-]/g, '');
   var number = Number(cleaned);
@@ -14,7 +21,50 @@ function getComparableValue(text) {
   return normalizeCellText(text).toLowerCase();
 }
 
-function sortRows(table, columnIndex, direction) {
+function getTradeTable() {
+  var tables = Array.prototype.slice.call(document.querySelectorAll('table'));
+  return tables.find(function (table) {
+    var headers = Array.prototype.slice.call(table.querySelectorAll('thead th')).map(function (th) {
+      return cleanHeaderLabel(th.textContent);
+    });
+
+    return headers[0] === '날짜' &&
+      headers.indexOf('종목명') >= 0 &&
+      headers.indexOf('코드') >= 0 &&
+      headers.indexOf('구분') >= 0 &&
+      headers.indexOf('관리') >= 0;
+  });
+}
+
+function filterableTradeColumn(label) {
+  return ['날짜', '종목명', '코드', '구분', '메모'].indexOf(label) >= 0;
+}
+
+function sortableTradeColumn(label) {
+  return label !== '관리';
+}
+
+function getFilterValueFromCell(cell) {
+  var value = normalizeCellText(cell ? cell.textContent : '');
+  return value || '-';
+}
+
+function applyTradeFilters(table) {
+  var filters = JSON.parse(table.dataset.tradeFilters || '{}');
+  var rows = Array.prototype.slice.call(table.querySelectorAll('tbody tr'));
+
+  rows.forEach(function (row) {
+    var visible = Object.keys(filters).every(function (key) {
+      var expected = filters[key];
+      if (!expected) return true;
+      var cell = row.children[Number(key)];
+      return getFilterValueFromCell(cell) === expected;
+    });
+    row.style.display = visible ? '' : 'none';
+  });
+}
+
+function sortTradeRows(table, columnIndex, direction) {
   var tbody = table.querySelector('tbody');
   if (!tbody) return;
 
@@ -33,156 +83,113 @@ function sortRows(table, columnIndex, direction) {
   });
 
   rows.forEach(function (row) { tbody.appendChild(row); });
+  applyTradeFilters(table);
 }
 
-function applyTableFilters(table) {
-  var filters = JSON.parse(table.dataset.filters || '{}');
-  var rows = Array.prototype.slice.call(table.querySelectorAll('tbody tr'));
-
-  rows.forEach(function (row) {
-    var visible = Object.keys(filters).every(function (key) {
-      var value = filters[key];
-      if (!value) return true;
-      var cell = row.children[Number(key)];
-      return normalizeCellText(cell ? cell.textContent : '') === value;
-    });
-    row.style.display = visible ? '' : 'none';
+function resetTradeFilters(table) {
+  table.dataset.tradeFilters = '{}';
+  table.querySelectorAll('.thFilterSelect').forEach(function (select) {
+    select.value = '';
+  });
+  table.querySelectorAll('tbody tr').forEach(function (row) {
+    row.style.display = '';
   });
 }
 
-function buildFilterValue(cellText) {
-  var text = normalizeCellText(cellText);
-  if (!text || text === '-') return text || '-';
-  return text;
-}
-
-function shouldFilterColumn(label) {
-  return ['관리', '현재가 입력'].indexOf(label) < 0;
-}
-
-function isExcelToolTarget(table) {
-  var headers = Array.prototype.slice.call(table.querySelectorAll('thead th')).map(function (th) {
-    return normalizeCellText(th.textContent).replace(/\s*[↕↑↓].*$/, '').trim();
-  });
-  return headers.length >= 7 && (
-    headers.indexOf('종목명') >= 0 ||
-    headers.indexOf('날짜') >= 0 ||
-    headers.indexOf('매도일') >= 0
-  );
-}
-
-function resetTable(table) {
-  table.dataset.filters = '{}';
-  table.querySelectorAll('.thFilterSelect').forEach(function (select) { select.value = ''; });
-  table.querySelectorAll('tbody tr').forEach(function (row) { row.style.display = ''; });
-}
-
-function placeResetButton(table) {
+function placeTradeResetButton(table) {
   var card = table.closest('.card');
-  if (!card) return;
-  if (card.querySelector('.tableResetButton')) return;
+  if (!card || card.querySelector('.tradeFilterResetButton')) return;
 
   var resetButton = document.createElement('button');
   resetButton.type = 'button';
-  resetButton.className = 'tableResetButton';
+  resetButton.className = 'tableResetButton tradeFilterResetButton';
   resetButton.textContent = '필터 초기화';
-  resetButton.addEventListener('click', function () { resetTable(table); });
-
-  var rowHeader = Array.prototype.slice.call(card.children).find(function (node) {
-    return node.classList && node.classList.contains('row') && node.classList.contains('between') && node.querySelector('h2');
+  resetButton.addEventListener('click', function () {
+    resetTradeFilters(table);
   });
 
-  if (rowHeader) {
-    var actionGroup = rowHeader.querySelector('.cardHeaderActions');
-    if (!actionGroup) {
-      actionGroup = document.createElement('div');
-      actionGroup.className = 'cardHeaderActions';
-      Array.prototype.slice.call(rowHeader.children).forEach(function (child) {
-        if (child.tagName === 'BUTTON') actionGroup.appendChild(child);
-      });
-      rowHeader.appendChild(actionGroup);
-    }
-    actionGroup.insertBefore(resetButton, actionGroup.firstChild);
-    return;
+  var rowHeader = card.querySelector('.row.between');
+  if (!rowHeader) return;
+
+  var actionGroup = rowHeader.querySelector('.cardHeaderActions');
+  if (!actionGroup) {
+    actionGroup = document.createElement('div');
+    actionGroup.className = 'cardHeaderActions';
+    Array.prototype.slice.call(rowHeader.children).forEach(function (child) {
+      if (child.tagName === 'BUTTON') actionGroup.appendChild(child);
+    });
+    rowHeader.appendChild(actionGroup);
   }
 
-  var h2 = Array.prototype.slice.call(card.children).find(function (node) { return node.tagName === 'H2'; });
-  if (h2) {
-    var titleRow = document.createElement('div');
-    titleRow.className = 'cardTitleRow';
-    card.insertBefore(titleRow, h2);
-    titleRow.appendChild(h2);
-    titleRow.appendChild(resetButton);
-  }
+  actionGroup.insertBefore(resetButton, actionGroup.firstChild);
 }
 
-function enhanceTable(table) {
-  if (!isExcelToolTarget(table)) return;
+function enhanceTradesTable() {
+  var table = getTradeTable();
+  if (!table) return;
 
-  var originalHeaders = Array.prototype.slice.call(table.querySelectorAll('thead th')).map(function (th) {
-    return normalizeCellText(th.textContent).replace(/\s*[↕↑↓].*$/, '').trim();
-  });
+  var headerCells = Array.prototype.slice.call(table.querySelectorAll('thead th'));
+  var labels = headerCells.map(function (th) { return cleanHeaderLabel(th.textContent); });
   var rowCount = table.querySelectorAll('tbody tr').length;
-  var signature = originalHeaders.join('|') + ':' + rowCount;
+  var signature = labels.join('|') + ':' + rowCount;
 
-  if (table.dataset.excelEnhanced === 'true' && table.dataset.excelSignature === signature) {
-    placeResetButton(table);
+  if (table.dataset.tradeExcelEnhanced === 'true' && table.dataset.tradeExcelSignature === signature) {
+    placeTradeResetButton(table);
     return;
   }
 
-  table.dataset.excelEnhanced = 'true';
-  table.dataset.excelSignature = signature;
-  table.dataset.filters = '{}';
+  table.dataset.tradeExcelEnhanced = 'true';
+  table.dataset.tradeExcelSignature = signature;
+  table.dataset.tradeFilters = '{}';
 
-  var headers = Array.prototype.slice.call(table.querySelectorAll('thead th'));
-  var tbody = table.querySelector('tbody');
-  if (!tbody) return;
-
-  headers.forEach(function (th, columnIndex) {
-    var originalLabel = originalHeaders[columnIndex];
-    var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
-    var uniqueValues = Array.from(new Set(rows.map(function (row) {
-      return buildFilterValue(row.children[columnIndex] ? row.children[columnIndex].textContent : '');
+  headerCells.forEach(function (th, columnIndex) {
+    var label = labels[columnIndex];
+    var rows = Array.prototype.slice.call(table.querySelectorAll('tbody tr'));
+    var values = Array.from(new Set(rows.map(function (row) {
+      return getFilterValueFromCell(row.children[columnIndex]);
     }).filter(Boolean))).sort(function (a, b) { return a.localeCompare(b, 'ko'); });
 
     th.innerHTML = '';
     th.classList.add('filterableTh');
 
-    var labelButton = document.createElement('button');
-    labelButton.type = 'button';
-    labelButton.className = 'thSortButton';
-    labelButton.textContent = originalLabel + ' ↕';
-    labelButton.title = '클릭하면 정렬됩니다';
-    labelButton.dataset.label = originalLabel;
-    labelButton.addEventListener('click', function () {
-      var currentColumn = Number(table.dataset.sortColumn || -1);
-      var currentDirection = table.dataset.sortDirection || 'desc';
-      var nextDirection = currentColumn === columnIndex && currentDirection === 'asc' ? 'desc' : 'asc';
-      table.dataset.sortColumn = String(columnIndex);
-      table.dataset.sortDirection = nextDirection;
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'thSortButton';
+    button.dataset.label = label;
+    button.textContent = sortableTradeColumn(label) ? label + ' ↕' : label;
 
-      table.querySelectorAll('.thSortButton').forEach(function (button) {
-        var base = button.dataset.label || normalizeCellText(button.textContent).replace(/\s*[↕↑↓].*$/, '').trim();
-        button.textContent = base + ' ↕';
+    if (sortableTradeColumn(label)) {
+      button.title = '클릭하면 정렬됩니다';
+      button.addEventListener('click', function () {
+        var currentColumn = Number(table.dataset.tradeSortColumn || -1);
+        var currentDirection = table.dataset.tradeSortDirection || 'desc';
+        var nextDirection = currentColumn === columnIndex && currentDirection === 'asc' ? 'desc' : 'asc';
+
+        table.dataset.tradeSortColumn = String(columnIndex);
+        table.dataset.tradeSortDirection = nextDirection;
+
+        table.querySelectorAll('.thSortButton').forEach(function (item) {
+          var base = item.dataset.label || cleanHeaderLabel(item.textContent);
+          item.textContent = sortableTradeColumn(base) ? base + ' ↕' : base;
+        });
+        button.textContent = label + (nextDirection === 'asc' ? ' ↑' : ' ↓');
+        sortTradeRows(table, columnIndex, nextDirection);
       });
-      labelButton.textContent = originalLabel + (nextDirection === 'asc' ? ' ↑' : ' ↓');
+    }
 
-      sortRows(table, columnIndex, nextDirection);
-      applyTableFilters(table);
-    });
-    th.appendChild(labelButton);
+    th.appendChild(button);
 
-    if (shouldFilterColumn(originalLabel) && uniqueValues.length > 1 && uniqueValues.length <= 80) {
+    if (filterableTradeColumn(label) && values.length > 1 && values.length <= 120) {
       var select = document.createElement('select');
       select.className = 'thFilterSelect';
-      select.title = originalLabel + ' 필터';
+      select.title = label + ' 필터';
 
       var allOption = document.createElement('option');
       allOption.value = '';
       allOption.textContent = '전체';
       select.appendChild(allOption);
 
-      uniqueValues.forEach(function (value) {
+      values.forEach(function (value) {
         var option = document.createElement('option');
         option.value = value;
         option.textContent = value;
@@ -191,96 +198,34 @@ function enhanceTable(table) {
 
       select.addEventListener('click', function (event) { event.stopPropagation(); });
       select.addEventListener('change', function () {
-        var filters = JSON.parse(table.dataset.filters || '{}');
+        var filters = JSON.parse(table.dataset.tradeFilters || '{}');
         if (select.value) filters[columnIndex] = select.value;
         else delete filters[columnIndex];
-        table.dataset.filters = JSON.stringify(filters);
-        applyTableFilters(table);
+        table.dataset.tradeFilters = JSON.stringify(filters);
+        applyTradeFilters(table);
       });
 
       th.appendChild(select);
     }
   });
 
-  placeResetButton(table);
+  placeTradeResetButton(table);
 }
 
-function removeLegacyStatusFilters() {
-  document.querySelectorAll('.card > div').forEach(function (node) {
-    if (node.classList.contains('tableToolBar')) return;
-    if (!node.querySelector('select')) return;
-    var text = normalizeCellText(node.textContent);
-    if (text === '상태 전체' || text.startsWith('상태 전체')) {
-      node.remove();
-    }
-  });
-}
-
-function removeLegacyToolbars() {
-  document.querySelectorAll('.tableToolBar').forEach(function (node) { node.remove(); });
-}
-
-function simplifyKospiCard() {
-  var card = document.querySelector('.marketCard');
-  if (!card) return;
-
-  var valueEl = card.querySelector('.marketValue');
-  var changeEl = card.querySelector('.marketChange');
-  var chart = card.querySelector('.marketChart');
-  if (!valueEl || !changeEl) return;
-
-  if (chart) chart.style.display = 'none';
-  card.querySelectorAll('.marketPeriodLabel').forEach(function (node) { node.remove(); });
-
-  var latest = parseNumberLike(valueEl.textContent) || 0;
-  var changeMatch = normalizeCellText(changeEl.textContent).match(/([+\-]?[0-9,.]+)\s*\(([^)]+)\)/);
-  var change = changeMatch ? parseNumberLike(changeMatch[1]) || 0 : 0;
-  var previous = latest - change;
-  var changePct = changeMatch ? changeMatch[2] : '';
-  var nextHtml =
-    '<div><span>전일 종가</span><strong>' + previous.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</strong></div>' +
-    '<div><span>전일 대비</span><strong>' + (change > 0 ? '+' : '') + change.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + 'p</strong></div>' +
-    '<div><span>등락률</span><strong>' + changePct + '</strong></div>';
-
-  var details = card.querySelector('.marketDetails');
-  if (!details) {
-    details = document.createElement('div');
-    details.className = 'marketDetails';
-    card.appendChild(details);
-  }
-
-  if (details.innerHTML !== nextHtml) details.innerHTML = nextHtml;
-}
-
-function runExcelTableTools() {
-  removeLegacyStatusFilters();
-  removeLegacyToolbars();
-  document.querySelectorAll('table').forEach(enhanceTable);
-  simplifyKospiCard();
-}
-
-var excelToolsTimer = null;
-function scheduleExcelTableTools() {
-  window.clearTimeout(excelToolsTimer);
-  excelToolsTimer = window.setTimeout(runExcelTableTools, 120);
+var tradeExcelTimer = null;
+function scheduleTradesTableEnhance() {
+  window.clearTimeout(tradeExcelTimer);
+  tradeExcelTimer = window.setTimeout(enhanceTradesTable, 160);
 }
 
 window.addEventListener('load', function () {
-  runExcelTableTools();
+  window.setTimeout(enhanceTradesTable, 350);
 
   document.addEventListener('click', function (event) {
     var target = event.target;
-    if (!target) return;
-    if (target.classList && (target.classList.contains('tab') || target.classList.contains('btn'))) {
-      scheduleExcelTableTools();
-      window.setTimeout(runExcelTableTools, 500);
+    if (!target || !target.classList) return;
+    if (target.classList.contains('tab') || target.classList.contains('btn')) {
+      scheduleTradesTableEnhance();
     }
   });
-
-  var count = 0;
-  var timer = window.setInterval(function () {
-    runExcelTableTools();
-    count += 1;
-    if (count >= 8) window.clearInterval(timer);
-  }, 700);
 });
