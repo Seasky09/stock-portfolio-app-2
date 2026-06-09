@@ -1,23 +1,24 @@
 /* Header spacing fix: buttons and last refresh time */
 .topbar{
-  min-height:82px;
-  margin-bottom:20px;
+  min-height:92px;
+  margin-bottom:22px;
   align-items:flex-start;
 }
 
 .topbar .row{
-  gap:12px;
+  gap:14px;
 }
 
 .lastRefreshTime{
-  right:2px !important;
-  top:62px !important;
-  padding:5px 12px !important;
+  right:20px !important;
+  top:68px !important;
+  padding:6px 14px !important;
+  box-shadow:0 8px 22px rgba(15,23,42,.05);
 }
 
 @media (max-width: 640px){
   .topbar{
-    padding-bottom:36px;
+    padding-bottom:40px;
   }
 
   .topbar .row{
@@ -26,8 +27,8 @@
 
   .lastRefreshTime{
     top:auto !important;
-    right:0 !important;
-    bottom:2px !important;
+    right:8px !important;
+    bottom:4px !important;
     padding:5px 11px !important;
   }
 }
