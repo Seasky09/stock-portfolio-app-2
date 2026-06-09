@@ -21,18 +21,35 @@ function getComparableValue(text) {
   return normalizeCellText(text).toLowerCase();
 }
 
+function getTableLabels(table) {
+  return Array.prototype.slice.call(table.querySelectorAll('thead th')).map(function (th) {
+    return cleanHeaderLabel(th.textContent);
+  });
+}
+
 function getTradeTable() {
   var tables = Array.prototype.slice.call(document.querySelectorAll('table'));
   return tables.find(function (table) {
-    var headers = Array.prototype.slice.call(table.querySelectorAll('thead th')).map(function (th) {
-      return cleanHeaderLabel(th.textContent);
-    });
-
+    var headers = getTableLabels(table);
     return headers[0] === '날짜' &&
       headers.indexOf('종목명') >= 0 &&
       headers.indexOf('코드') >= 0 &&
       headers.indexOf('구분') >= 0 &&
       headers.indexOf('관리') >= 0;
+  });
+}
+
+function getHoldingTables() {
+  var tables = Array.prototype.slice.call(document.querySelectorAll('table'));
+  return tables.filter(function (table) {
+    var headers = getTableLabels(table);
+    return headers[0] === '종목명' &&
+      headers.indexOf('코드') >= 0 &&
+      headers.indexOf('보유수량') >= 0 &&
+      headers.indexOf('평균단가') >= 0 &&
+      headers.indexOf('현재가 입력') >= 0 &&
+      headers.indexOf('평가금액') >= 0 &&
+      headers.indexOf('관리') < 0;
   });
 }
 
@@ -44,13 +61,21 @@ function sortableTradeColumn(label) {
   return label !== '관리';
 }
 
+function filterableHoldingColumn(label) {
+  return label !== '현재가 입력';
+}
+
+function sortableHoldingColumn(label) {
+  return label !== '현재가 입력';
+}
+
 function getFilterValueFromCell(cell) {
   var value = normalizeCellText(cell ? cell.textContent : '');
   return value || '-';
 }
 
-function applyTradeFilters(table) {
-  var filters = JSON.parse(table.dataset.tradeFilters || '{}');
+function applyTableFilters(table, datasetKey) {
+  var filters = JSON.parse(table.dataset[datasetKey] || '{}');
   var rows = Array.prototype.slice.call(table.querySelectorAll('tbody tr'));
 
   rows.forEach(function (row) {
@@ -64,7 +89,7 @@ function applyTradeFilters(table) {
   });
 }
 
-function sortTradeRows(table, columnIndex, direction) {
+function sortRows(table, columnIndex, direction, filterDatasetKey) {
   var tbody = table.querySelector('tbody');
   if (!tbody) return;
 
@@ -83,11 +108,11 @@ function sortTradeRows(table, columnIndex, direction) {
   });
 
   rows.forEach(function (row) { tbody.appendChild(row); });
-  applyTradeFilters(table);
+  applyTableFilters(table, filterDatasetKey);
 }
 
-function resetTradeFilters(table) {
-  table.dataset.tradeFilters = '{}';
+function resetTableFilters(table, datasetKey) {
+  table.dataset[datasetKey] = '{}';
   table.querySelectorAll('.thFilterSelect').forEach(function (select) {
     select.value = '';
   });
@@ -96,51 +121,65 @@ function resetTradeFilters(table) {
   });
 }
 
-function placeTradeResetButton(table) {
+function placeResetButton(table, options) {
   var card = table.closest('.card');
-  if (!card || card.querySelector('.tradeFilterResetButton')) return;
+  if (!card || card.querySelector('.' + options.buttonClass)) return;
 
   var resetButton = document.createElement('button');
   resetButton.type = 'button';
-  resetButton.className = 'tableResetButton tradeFilterResetButton';
+  resetButton.className = 'tableResetButton ' + options.buttonClass;
   resetButton.textContent = '필터 초기화';
   resetButton.addEventListener('click', function () {
-    resetTradeFilters(table);
+    resetTableFilters(table, options.filterDatasetKey);
   });
 
   var rowHeader = card.querySelector('.row.between');
-  if (!rowHeader) return;
-
-  var actionGroup = rowHeader.querySelector('.cardHeaderActions');
-  if (!actionGroup) {
-    actionGroup = document.createElement('div');
-    actionGroup.className = 'cardHeaderActions';
-    Array.prototype.slice.call(rowHeader.children).forEach(function (child) {
-      if (child.tagName === 'BUTTON') actionGroup.appendChild(child);
-    });
-    rowHeader.appendChild(actionGroup);
+  if (rowHeader) {
+    var actionGroup = rowHeader.querySelector('.cardHeaderActions');
+    if (!actionGroup) {
+      actionGroup = document.createElement('div');
+      actionGroup.className = 'cardHeaderActions';
+      Array.prototype.slice.call(rowHeader.children).forEach(function (child) {
+        if (child.tagName === 'BUTTON') actionGroup.appendChild(child);
+      });
+      rowHeader.appendChild(actionGroup);
+    }
+    actionGroup.insertBefore(resetButton, actionGroup.firstChild);
+    return;
   }
 
-  actionGroup.insertBefore(resetButton, actionGroup.firstChild);
+  var existingTitleRow = Array.prototype.slice.call(card.children).find(function (node) {
+    return node.classList && node.classList.contains('cardTitleRow');
+  });
+  if (existingTitleRow) {
+    existingTitleRow.appendChild(resetButton);
+    return;
+  }
+
+  var h2 = Array.prototype.slice.call(card.children).find(function (node) { return node.tagName === 'H2'; });
+  if (h2) {
+    var titleRow = document.createElement('div');
+    titleRow.className = 'cardTitleRow';
+    card.insertBefore(titleRow, h2);
+    titleRow.appendChild(h2);
+    titleRow.appendChild(resetButton);
+  }
 }
 
-function enhanceTradesTable() {
-  var table = getTradeTable();
-  if (!table) return;
-
+function enhanceTable(table, options) {
   var headerCells = Array.prototype.slice.call(table.querySelectorAll('thead th'));
   var labels = headerCells.map(function (th) { return cleanHeaderLabel(th.textContent); });
   var rowCount = table.querySelectorAll('tbody tr').length;
   var signature = labels.join('|') + ':' + rowCount;
 
-  if (table.dataset.tradeExcelEnhanced === 'true' && table.dataset.tradeExcelSignature === signature) {
-    placeTradeResetButton(table);
+  if (table.dataset[options.enhancedKey] === 'true' && table.dataset[options.signatureKey] === signature) {
+    placeResetButton(table, options);
     return;
   }
 
-  table.dataset.tradeExcelEnhanced = 'true';
-  table.dataset.tradeExcelSignature = signature;
-  table.dataset.tradeFilters = '{}';
+  table.dataset[options.enhancedKey] = 'true';
+  table.dataset[options.signatureKey] = signature;
+  table.dataset[options.filterDatasetKey] = '{}';
 
   headerCells.forEach(function (th, columnIndex) {
     var label = labels[columnIndex];
@@ -156,30 +195,30 @@ function enhanceTradesTable() {
     button.type = 'button';
     button.className = 'thSortButton';
     button.dataset.label = label;
-    button.textContent = sortableTradeColumn(label) ? label + ' ↕' : label;
+    button.textContent = options.isSortable(label) ? label + ' ↕' : label;
 
-    if (sortableTradeColumn(label)) {
+    if (options.isSortable(label)) {
       button.title = '클릭하면 정렬됩니다';
       button.addEventListener('click', function () {
-        var currentColumn = Number(table.dataset.tradeSortColumn || -1);
-        var currentDirection = table.dataset.tradeSortDirection || 'desc';
+        var currentColumn = Number(table.dataset[options.sortColumnKey] || -1);
+        var currentDirection = table.dataset[options.sortDirectionKey] || 'desc';
         var nextDirection = currentColumn === columnIndex && currentDirection === 'asc' ? 'desc' : 'asc';
 
-        table.dataset.tradeSortColumn = String(columnIndex);
-        table.dataset.tradeSortDirection = nextDirection;
+        table.dataset[options.sortColumnKey] = String(columnIndex);
+        table.dataset[options.sortDirectionKey] = nextDirection;
 
         table.querySelectorAll('.thSortButton').forEach(function (item) {
           var base = item.dataset.label || cleanHeaderLabel(item.textContent);
-          item.textContent = sortableTradeColumn(base) ? base + ' ↕' : base;
+          item.textContent = options.isSortable(base) ? base + ' ↕' : base;
         });
         button.textContent = label + (nextDirection === 'asc' ? ' ↑' : ' ↓');
-        sortTradeRows(table, columnIndex, nextDirection);
+        sortRows(table, columnIndex, nextDirection, options.filterDatasetKey);
       });
     }
 
     th.appendChild(button);
 
-    if (filterableTradeColumn(label) && values.length > 1 && values.length <= 120) {
+    if (options.isFilterable(label) && values.length > 1 && values.length <= 120) {
       var select = document.createElement('select');
       select.className = 'thFilterSelect';
       select.title = label + ' 필터';
@@ -198,45 +237,80 @@ function enhanceTradesTable() {
 
       select.addEventListener('click', function (event) { event.stopPropagation(); });
       select.addEventListener('change', function () {
-        var filters = JSON.parse(table.dataset.tradeFilters || '{}');
+        var filters = JSON.parse(table.dataset[options.filterDatasetKey] || '{}');
         if (select.value) filters[columnIndex] = select.value;
         else delete filters[columnIndex];
-        table.dataset.tradeFilters = JSON.stringify(filters);
-        applyTradeFilters(table);
+        table.dataset[options.filterDatasetKey] = JSON.stringify(filters);
+        applyTableFilters(table, options.filterDatasetKey);
       });
 
       th.appendChild(select);
     }
   });
 
-  placeTradeResetButton(table);
+  placeResetButton(table, options);
 }
 
-var tradeExcelTimer = null;
-function scheduleTradesTableEnhance() {
-  window.clearTimeout(tradeExcelTimer);
-  tradeExcelTimer = window.setTimeout(enhanceTradesTable, 120);
+function enhanceTradesTable() {
+  var table = getTradeTable();
+  if (!table) return;
+  enhanceTable(table, {
+    enhancedKey: 'tradeExcelEnhanced',
+    signatureKey: 'tradeExcelSignature',
+    filterDatasetKey: 'tradeFilters',
+    sortColumnKey: 'tradeSortColumn',
+    sortDirectionKey: 'tradeSortDirection',
+    buttonClass: 'tradeFilterResetButton',
+    isFilterable: filterableTradeColumn,
+    isSortable: sortableTradeColumn
+  });
+}
+
+function enhanceHoldingTables() {
+  getHoldingTables().forEach(function (table, index) {
+    enhanceTable(table, {
+      enhancedKey: 'holdingExcelEnhanced',
+      signatureKey: 'holdingExcelSignature',
+      filterDatasetKey: 'holdingFilters',
+      sortColumnKey: 'holdingSortColumn',
+      sortDirectionKey: 'holdingSortDirection',
+      buttonClass: 'holdingFilterResetButton holdingFilterResetButton' + index,
+      isFilterable: filterableHoldingColumn,
+      isSortable: sortableHoldingColumn
+    });
+  });
+}
+
+function enhancePortfolioTables() {
+  enhanceTradesTable();
+  enhanceHoldingTables();
+}
+
+var portfolioExcelTimer = null;
+function schedulePortfolioTablesEnhance() {
+  window.clearTimeout(portfolioExcelTimer);
+  portfolioExcelTimer = window.setTimeout(enhancePortfolioTables, 120);
   [260, 650, 1200].forEach(function (delay) {
-    window.setTimeout(enhanceTradesTable, delay);
+    window.setTimeout(enhancePortfolioTables, delay);
   });
 }
 
 window.addEventListener('load', function () {
   [250, 700, 1300].forEach(function (delay) {
-    window.setTimeout(enhanceTradesTable, delay);
+    window.setTimeout(enhancePortfolioTables, delay);
   });
 
   document.addEventListener('click', function (event) {
     var target = event.target;
     if (!target || !target.classList) return;
     if (target.classList.contains('tab') || target.classList.contains('btn')) {
-      scheduleTradesTableEnhance();
+      schedulePortfolioTablesEnhance();
     }
   }, true);
 
-  window.addEventListener('focus', scheduleTradesTableEnhance);
-  window.addEventListener('pageshow', scheduleTradesTableEnhance);
+  window.addEventListener('focus', schedulePortfolioTablesEnhance);
+  window.addEventListener('pageshow', schedulePortfolioTablesEnhance);
   document.addEventListener('visibilitychange', function () {
-    if (!document.hidden) scheduleTradesTableEnhance();
+    if (!document.hidden) schedulePortfolioTablesEnhance();
   });
 });
