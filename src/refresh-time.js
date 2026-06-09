@@ -25,6 +25,8 @@ function renderRefreshTime() {
     el.id = 'lastRefreshTime';
     el.className = 'lastRefreshTime';
     topbar.appendChild(el);
+  } else if (el.parentNode !== topbar) {
+    topbar.appendChild(el);
   }
   el.textContent = text;
 }
@@ -59,6 +61,24 @@ function updateRefreshTimeWhenMarketDataAppears() {
   return true;
 }
 
+var refreshTimeTimer = null;
+function scheduleRefreshTimeRender() {
+  window.clearTimeout(refreshTimeTimer);
+  refreshTimeTimer = window.setTimeout(function () {
+    renderRefreshTime();
+    bindRefreshButton();
+    updateRefreshTimeWhenMarketDataAppears();
+  }, 80);
+
+  [220, 500, 1000].forEach(function (delay) {
+    window.setTimeout(function () {
+      renderRefreshTime();
+      bindRefreshButton();
+      updateRefreshTimeWhenMarketDataAppears();
+    }, delay);
+  });
+}
+
 window.addEventListener('load', function () {
   renderRefreshTime();
   bindRefreshButton();
@@ -71,4 +91,18 @@ window.addEventListener('load', function () {
     count += 1;
     if (count >= 20) window.clearInterval(timer);
   }, 500);
+
+  document.addEventListener('click', function (event) {
+    var target = event.target;
+    if (!target || !target.classList) return;
+    if (target.classList.contains('tab') || target.classList.contains('btn')) {
+      scheduleRefreshTimeRender();
+    }
+  }, true);
+});
+
+window.addEventListener('focus', scheduleRefreshTimeRender);
+window.addEventListener('pageshow', scheduleRefreshTimeRender);
+document.addEventListener('visibilitychange', function () {
+  if (!document.hidden) scheduleRefreshTimeRender();
 });
